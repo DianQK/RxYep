@@ -72,10 +72,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: Life Circle
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        BuddyBuildSDK.setup()
+//        BuddyBuildSDK.setup()
         
 
-        Realm.Configuration.defaultConfiguration = realmConfig()
+//        Realm.Configuration.defaultConfiguration = realmConfig()
 
         cacheInAdvance()
 
@@ -91,7 +91,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             #endif
             JPUSHService.setupWithOption(launchOptions, appKey: "e521aa97cd4cd4eba5b73669", channel: "AppStore", apsForProduction: apsForProduction)
             */
-            APService.setupWithOption(launchOptions)
+//            APService.setupWithOption(launchOptions)
         }
         
         let _ = try? AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayAndRecord, withOptions: AVAudioSessionCategoryOptions.DefaultToSpeaker)
@@ -205,10 +205,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             completionHandler()
         }
 
-        guard #available(iOS 9, *) else {
-            return
-        }
-
         guard let identifier = identifier else {
             return
         }
@@ -235,7 +231,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         println("didReceiveRemoteNotification: \(userInfo)")
         //JPUSHService.handleRemoteNotification(userInfo)
-        APService.handleRemoteNotification(userInfo)
+//        APService.handleRemoteNotification(userInfo)
         
         guard YepUserDefaults.isLogined, let type = userInfo["type"] as? String, remoteNotificationType = RemoteNotificationType(rawValue: type) else {
             completionHandler(UIBackgroundFetchResult.NoData)
@@ -460,8 +456,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         //JPUSHService.registerDeviceToken(deviceToken)
         //JPUSHService.setTags(Set(["iOS"]), alias: pusherID, callbackSelector:nil, object: nil)
-        APService.registerDeviceToken(deviceToken)
-        APService.setTags(Set(["iOS"]), alias: pusherID, callbackSelector:nil, object: nil)
+//        APService.registerDeviceToken(deviceToken)
+//        APService.setTags(Set(["iOS"]), alias: pusherID, callbackSelector:nil, object: nil)
     }
 
     func tagsAliasCallback(iResCode: Int, tags: NSSet, alias: NSString) {

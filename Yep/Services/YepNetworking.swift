@@ -75,8 +75,9 @@ let defaultFailureHandler: FailureHandler = { reason, errorMessage in
 
 func queryComponents(key: String, value: AnyObject) -> [(String, String)] {
     func escape(string: String) -> String {
-        let legalURLCharactersToBeEscaped: CFStringRef = ":/?&=;+!@#$()',*"
-        return CFURLCreateStringByAddingPercentEscapes(nil, string, nil, legalURLCharactersToBeEscaped, CFStringBuiltInEncodings.UTF8.rawValue) as String
+        let legalURLCharactersToBeEscaped  = NSCharacterSet(charactersInString: ":/?&=;+!@#$()',*") //":/?&=;+!@#$()',*"
+//        return CFURLCreateStringByAddingPercentEscapes(nil, string, nil, legalURLCharactersToBeEscaped, CFStringBuiltInEncodings.UTF8.rawValue) as String
+        return string.stringByAddingPercentEncodingWithAllowedCharacters(legalURLCharactersToBeEscaped)!
     }
 
     var components: [(String, String)] = []
