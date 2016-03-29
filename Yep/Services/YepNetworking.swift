@@ -7,6 +7,10 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
+import RxOptional
+import NSObject_Rx
 
 public enum Method: String, CustomStringConvertible {
     case OPTIONS = "OPTIONS"
@@ -114,6 +118,25 @@ class SessionDelegate: NSObject, NSURLSessionDelegate {
 
 let _sessionDelegate = SessionDelegate()
 #endif
+
+public struct RxYepError: ErrorType {
+    let reason: Reason
+    let errorMessage: String?
+}
+
+public func rx_apiRequest<A>(modifyRequest: NSMutableURLRequest -> (), baseURL: NSURL, resource: Resource<A>?) -> Observable<A> {
+    return Observable.create { observer in
+        
+        apiRequest(modifyRequest, baseURL: baseURL, resource: resource, failure: { (reason, errorMessage) in
+            observer.onError(RxYepError(reason: reason, errorMessage: errorMessage))
+            }, completion: { result in
+                observer.onNext(result)
+                observer.onCompleted()
+        })
+        // TODO: -
+        return NopDisposable.instance
+    }
+}
 
 public func apiRequest<A>(modifyRequest: NSMutableURLRequest -> (), baseURL: NSURL, resource: Resource<A>?, failure: FailureHandler?, completion: A -> Void) {
 

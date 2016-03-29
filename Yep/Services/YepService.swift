@@ -10,6 +10,10 @@ import Foundation
 import RealmSwift
 import CoreLocation
 import Alamofire
+import RxSwift
+import RxCocoa
+import RxOptional
+import NSObject_Rx
 
 #if STAGING
 let yepBaseURL = NSURL(string: "https://park-staging.catchchatchina.com/api")!
@@ -443,6 +447,23 @@ func updateAvatarWithImageData(imageData: NSData, failureHandler: FailureHandler
 enum VerifyCodeMethod: String {
     case SMS = "sms"
     case Call = "call"
+}
+// MARK: - 验证手机号并请求验证码
+func rx_sendVerifyCodeOfMobile(mobile: String, withAreaCode areaCode: String, useMethod method: VerifyCodeMethod) -> Observable<Bool> {
+    
+    let requestParameters = [
+        "mobile": mobile,
+        "phone_code": areaCode,
+        "method": method.rawValue
+    ]
+    
+    let parse: JSONDictionary -> Bool? = { data in
+        return true
+    }
+    
+    let resource = jsonResource(path: "/v1/sms_verification_codes", method: .POST, requestParameters: requestParameters, parse: parse)
+    
+    return rx_apiRequest({_ in}, baseURL: yepBaseURL, resource: resource)
 }
 
 func sendVerifyCodeOfMobile(mobile: String, withAreaCode areaCode: String, useMethod method: VerifyCodeMethod, failureHandler: FailureHandler?, completion: Bool -> Void) {

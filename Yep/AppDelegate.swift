@@ -72,7 +72,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: Life Circle
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        BuddyBuildSDK.setup()
+//        BuddyBuildSDK.setup()
         
 
         Realm.Configuration.defaultConfiguration = realmConfig()

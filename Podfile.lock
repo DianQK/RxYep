@@ -13,8 +13,10 @@ PODS:
   - Kanna (1.0.5)
   - KeyboardMan (0.6.0)
   - Kingfisher (2.2.0)
-  - MonkeyKing (0.0.2)
+  - MonkeyKing (0.9.2)
   - Navi (0.4.2)
+  - NSObject+Rx (1.2.1):
+    - RxSwift (~> 2.1)
   - pop (1.0.9)
   - Proposer (0.8.0)
   - Realm (0.98.6):
@@ -23,6 +25,15 @@ PODS:
   - RealmSwift (0.98.6):
     - Realm (= 0.98.6)
   - Ruler (0.6)
+  - RxCocoa (2.3.1):
+    - RxSwift (~> 2.3.1)
+  - RxDataSources (0.6.2):
+    - RxCocoa (~> 2.2)
+    - RxSwift (~> 2.2)
+  - RxOptional (2.0.0):
+    - RxCocoa (~> 2.0)
+    - RxSwift (~> 2.0)
+  - RxSwift (2.3.1)
   - SocketRocket (0.5.0)
   - TPKeyboardAvoiding (1.2.11)
 
@@ -39,12 +50,17 @@ DEPENDENCIES:
   - Kanna
   - KeyboardMan
   - Kingfisher
-  - MonkeyKing (= 0.0.2)
+  - MonkeyKing (~> 0.9)
   - Navi
+  - NSObject+Rx (~> 1.2)
   - pop
   - Proposer
   - RealmSwift
   - Ruler
+  - RxCocoa (~> 2.3)
+  - RxDataSources (~> 0.6)
+  - RxOptional (~> 2.0)
+  - RxSwift (~> 2.3)
   - SocketRocket
   - TPKeyboardAvoiding
 
@@ -61,14 +77,21 @@ SPEC CHECKSUMS:
   Kanna: 1df5cd995dc1f3a282e3dcf7521cfef2f069ac4d
   KeyboardMan: 665211f180093f5bb3c6ff7e8b7f858c432c6ccf
   Kingfisher: 350869ed88d6451803b390475d977abdd9f0a357
-  MonkeyKing: 9be24307843a80f4cd3eca66adc12c67aefb83bb
+  MonkeyKing: 2cf420f9202a51714734374c97d96cf496e7ae2b
   Navi: f743d94c9879e646ee399b404d0b53100c66a8bd
+  NSObject+Rx: 5d032a7f161602dec6b82dcf12731e91ce15b8da
   pop: f667631a5108a2e60d9e8797c9b32ddaf2080bce
   Proposer: 17cd7fd2509b0d8d7c9e33815d648087c7dcaa81
   Realm: 44803f35418c5d89b27825a564247fcd190de37e
   RealmSwift: c7239c52c83f8c43525a5269ba7be1694da33afc
   Ruler: b36ec3bbc5fc6c3b7f629a6052cc1c17ada4b280
+  RxCocoa: a2baaf3462b989559a51dce59d78fbebb8fe0afa
+  RxDataSources: 9ae26211019e6afb7391125940d719b4326e94a4
+  RxOptional: b77fb47a0190213cf8a37c7a2b7fda28160b4563
+  RxSwift: 829b2843e9eddc77a02cb3f5117f0d55f8f646f1
   SocketRocket: 2c51efccd2d73c99a923407ca4b06e7e9da95dbf
   TPKeyboardAvoiding: e5ce146b313de063957bfa75a13f1e9b0ff18ab7
 
-COCOAPODS: 0.39.0
+PODFILE CHECKSUM: 330edbe15e27dc9c99bb7a92366c0c82ea2f59cf
+
+COCOAPODS: 1.0.0.beta.4

@@ -8,6 +8,10 @@
 
 import UIKit
 import Ruler
+import RxSwift
+import RxCocoa
+import RxOptional
+import NSObject_Rx
 
 class LoginByMobileViewController: BaseViewController {
 
@@ -20,10 +24,7 @@ class LoginByMobileViewController: BaseViewController {
     @IBOutlet private weak var mobileNumberTextField: BorderTextField!
     @IBOutlet private weak var mobileNumberTextFieldTopConstraint: NSLayoutConstraint!
     
-    private lazy var nextButton: UIBarButtonItem = {
-        let button = UIBarButtonItem(title: NSLocalizedString("Next", comment: ""), style: .Plain, target: self, action: #selector(LoginByMobileViewController.next(_:)))
-        return button
-    }()
+    var viewModel: LoginByMobileViewModel!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,31 +34,73 @@ class LoginByMobileViewController: BaseViewController {
         view.backgroundColor = UIColor.yepViewBackgroundColor()
 
         navigationItem.titleView = NavigationTitleLabel(title: NSLocalizedString("Login", comment: ""))
-   
+        
+        let nextButton = UIBarButtonItem()
+        nextButton.title = NSLocalizedString("Next", comment: "")
+        nextButton.style = .Plain
+        
         navigationItem.rightBarButtonItem = nextButton
-
+        
         pickMobileNumberPromptLabel.text = NSLocalizedString("What's your number?", comment: "")
-
+        
         areaCodeTextField.text = NSTimeZone.areaCode
         areaCodeTextField.backgroundColor = UIColor.whiteColor()
         
-        areaCodeTextField.delegate = self
-        areaCodeTextField.addTarget(self, action: #selector(LoginByMobileViewController.textFieldDidChange(_:)), forControlEvents: .EditingChanged)
-
         mobileNumberTextField.placeholder = ""
         mobileNumberTextField.backgroundColor = UIColor.whiteColor()
         mobileNumberTextField.textColor = UIColor.yepInputTextColor()
-        mobileNumberTextField.delegate = self
-        mobileNumberTextField.addTarget(self, action: #selector(LoginByMobileViewController.textFieldDidChange(_:)), forControlEvents: .EditingChanged)
-
+        
         pickMobileNumberPromptLabelTopConstraint.constant = Ruler.iPhoneVertical(30, 50, 60, 60).value
         mobileNumberTextFieldTopConstraint.constant = Ruler.iPhoneVertical(30, 40, 50, 50).value
-    }
-
-    override func viewWillAppear(animated: Bool) {
-        super.viewWillAppear(animated)
-
-        nextButton.enabled = false
+        
+        viewModel = LoginByMobileViewModel(input: (
+            areaCode: areaCodeTextField.rx_text.asObservable(),
+            mobileNumber: mobileNumberTextField.rx_text.asObservable(),
+            nextTap: nextButton.rx_tap.asObservable()))
+        
+        // 是否可以去验证
+        viewModel.loginVerifyMobileEnabled
+            .bindTo(nextButton.rx_enabled)
+            .addDisposableTo(rx_disposeBag)
+        
+        // 观察验证状态
+        viewModel.loginVerifyMobileRequesting.asObservable()
+            .subscribeNext { [unowned self] in
+                switch $0 {
+                case true:
+                    YepHUD.showActivityIndicator()
+                    self.view.endEditing(true)
+                case false: YepHUD.hideActivityIndicator()
+                }
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        viewModel.loginVerifyMobileResult
+            .observeOn(MainScheduler.instance)
+            .subscribe { [weak self] event in
+            switch event {
+            case .Next(let result) where result == true:
+                self?.showLoginVerifyMobile()
+            case .Next(let result) where result == false:
+                YepAlert.alertSorry(message: NSLocalizedString("Failed to send verification code!", comment: ""), inViewController: self, withDismissAction: { [weak self] in
+                    self?.mobileNumberTextField.becomeFirstResponder()
+                    })
+            case .Error(let error):
+//                YepAlert.alertSorry(message: errorMessage, inViewController: self, withDismissAction: { () -> Void in
+//                        self?.mobileNumberTextField.becomeFirstResponder()
+//                })
+                assert(false)
+            default: break
+            }
+        }.addDisposableTo(rx_disposeBag)
+        
+        areaCodeTextField
+            .rx_controlEvent([.EditingChanged, .EditingDidBegin])
+            .subscribeNext { [unowned self] in
+                self.adjustAreaCodeTextFieldWidth()
+            }
+            .addDisposableTo(rx_disposeBag)
+        
     }
 
     override func viewDidAppear(animated: Bool) {
@@ -81,63 +124,6 @@ class LoginByMobileViewController: BaseViewController {
             self.areaCodeTextFieldWidthConstraint.constant = max(width, 100)
             self.view.layoutIfNeeded()
         }, completion: { finished in
-        })
-    }
-
-    @objc private func textFieldDidChange(textField: UITextField) {
-
-        guard let areaCode = areaCodeTextField.text, mobile = mobileNumberTextField.text else {
-            return
-        }
-
-        nextButton.enabled = !areaCode.isEmpty && !mobile.isEmpty
-
-        if textField == areaCodeTextField {
-            adjustAreaCodeTextFieldWidth()
-        }
-    }
-
-    @objc private func next(sender: UIBarButtonItem) {
-        tryShowLoginVerifyMobile()
-    }
-
-    private func tryShowLoginVerifyMobile() {
-        
-        view.endEditing(true)
-
-        guard let areaCode = areaCodeTextField.text, mobile = mobileNumberTextField.text else {
-            return
-        }
-
-        YepHUD.showActivityIndicator()
-        
-        sendVerifyCodeOfMobile(mobile, withAreaCode: areaCode, useMethod: .SMS, failureHandler: { [weak self] reason, errorMessage in
-            defaultFailureHandler(reason: reason, errorMessage: errorMessage)
-
-            YepHUD.hideActivityIndicator()
-
-            if let errorMessage = errorMessage {
-                YepAlert.alertSorry(message: errorMessage, inViewController: self, withDismissAction: { () -> Void in
-                    dispatch_async(dispatch_get_main_queue()) {
-                        self?.mobileNumberTextField.becomeFirstResponder()
-                    }
-                })
-            }
-
-        }, completion: { [weak self] success in
-
-            YepHUD.hideActivityIndicator()
-
-            if success {
-                dispatch_async(dispatch_get_main_queue()) {
-                    self?.showLoginVerifyMobile()
-                }
-
-            } else {
-                YepAlert.alertSorry(message: NSLocalizedString("Failed to send verification code!", comment: ""), inViewController: self, withDismissAction: { [weak self] in
-                    self?.mobileNumberTextField.becomeFirstResponder()
-                })
-            }
         })
     }
 

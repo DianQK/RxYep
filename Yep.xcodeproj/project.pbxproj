@@ -21,7 +21,6 @@
 		0A8F54B61AB67D11004AD60E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A8F54B41AB67D11004AD60E /* Main.storyboard */; };
 		0A8F54B81AB67D11004AD60E /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A8F54B71AB67D11004AD60E /* Images.xcassets */; };
 		0A8F54BB1AB67D11004AD60E /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A8F54B91AB67D11004AD60E /* LaunchScreen.xib */; };
-		0A8F54C71AB67D11004AD60E /* YepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A8F54C61AB67D11004AD60E /* YepTests.swift */; };
 		0A90187E1B01152800AE4B7F /* ProfileSocialAccountCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A90187C1B01152800AE4B7F /* ProfileSocialAccountCell.swift */; };
 		0A90187F1B01152800AE4B7F /* ProfileSocialAccountCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A90187D1B01152800AE4B7F /* ProfileSocialAccountCell.xib */; };
 		0A9018821B0120A500AE4B7F /* OAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9018811B0120A500AE4B7F /* OAuthViewController.swift */; };
@@ -39,6 +38,7 @@
 		0AD7EA6A1AC3ED3D00617758 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD7EA691AC3ED3D00617758 /* UIKit.framework */; };
 		0AD7EA6C1AC3ED4300617758 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD7EA6B1AC3ED4300617758 /* Security.framework */; };
 		0AEB1CC61B0E742400178C9C /* Double+Yep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AEB1CC51B0E742400178C9C /* Double+Yep.swift */; };
+		262176891CAA9BD900DC3097 /* LoginByMobileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 262176881CAA9BD900DC3097 /* LoginByMobileViewModel.swift */; };
 		27CDF0ACB80E10E6AC5596F6 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A6628BE8C7FFA96376C5C6 /* CoreText.framework */; };
 		5008A1931B8DB8B500E94274 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5008A1951B8DB8B500E94274 /* Localizable.strings */; };
 		500A0B1C1B450C2100D49358 /* EditNicknameAndBadgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500A0B1B1B450C2100D49358 /* EditNicknameAndBadgeViewController.swift */; };
@@ -367,20 +367,9 @@
 		84C959891B731FD20017D3ED /* ChatBaseCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C959881B731FD20017D3ED /* ChatBaseCell.swift */; };
 		92E0FFE71C5F38E400226B96 /* MZFayeClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 92E0FFE41C5F38E400226B96 /* MZFayeClient.m */; };
 		92E0FFE81C5F38E400226B96 /* MZFayeMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 92E0FFE61C5F38E400226B96 /* MZFayeMessage.m */; };
-		B00500D7E943DDD27CF9C562 /* Pods_Yep.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3146F0F60F2A38BC6E0FA66 /* Pods_Yep.framework */; };
 		B03D54CAD0F1D56AB9396D11 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C73250AC8BB116924CA11C0 /* QuartzCore.framework */; };
-		F5195E9549502A903492570A /* BuddyBuildSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CFCCF0915063E63493164A3 /* BuddyBuildSDK.framework */; };
+		EB14A60AE134D00BD0A89645 /* Pods_Yep.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46FCB81D47F481192F302FF5 /* Pods_Yep.framework */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		0A8F54C11AB67D11004AD60E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0A8F54A31AB67D11004AD60E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0A8F54AA1AB67D11004AD60E;
-			remoteInfo = Yep;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		00E9240F12DD22E06A35F782 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
@@ -399,7 +388,6 @@
 		0A8F54B51AB67D11004AD60E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0A8F54B71AB67D11004AD60E /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		0A8F54BA1AB67D11004AD60E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		0A8F54C01AB67D11004AD60E /* YepTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YepTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A8F54C51AB67D11004AD60E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0A8F54C61AB67D11004AD60E /* YepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YepTests.swift; sourceTree = "<group>"; };
 		0A90187C1B01152800AE4B7F /* ProfileSocialAccountCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProfileSocialAccountCell.swift; path = Views/Cells/ProfileSocialAccount/ProfileSocialAccountCell.swift; sourceTree = "<group>"; };
@@ -420,10 +408,11 @@
 		0AD7EA691AC3ED3D00617758 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0AD7EA6B1AC3ED4300617758 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		0AEB1CC51B0E742400178C9C /* Double+Yep.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "Double+Yep.swift"; path = "Extensions/Double+Yep.swift"; sourceTree = "<group>"; };
+		262176881CAA9BD900DC3097 /* LoginByMobileViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginByMobileViewModel.swift; sourceTree = "<group>"; };
 		34A6628BE8C7FFA96376C5C6 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
+		42C798FA0B111E9E89187B41 /* Pods-Yep.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yep.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Yep/Pods-Yep.debug.xcconfig"; sourceTree = "<group>"; };
+		46FCB81D47F481192F302FF5 /* Pods_Yep.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Yep.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C73250AC8BB116924CA11C0 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		4CFCCF0915063E63493164A3 /* BuddyBuildSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = BuddyBuildSDK.framework; sourceTree = "<group>"; };
-		4EEAF88E6C6D61E595249DF5 /* Pods-Yep.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yep.release.xcconfig"; path = "Pods/Target Support Files/Pods-Yep/Pods-Yep.release.xcconfig"; sourceTree = "<group>"; };
 		5008A1941B8DB8B500E94274 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		5008A1961B8DB8E100E94274 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		500A0B1B1B450C2100D49358 /* EditNicknameAndBadgeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EditNicknameAndBadgeViewController.swift; path = ViewControllers/EditNicknameAndBadge/EditNicknameAndBadgeViewController.swift; sourceTree = "<group>"; };
@@ -740,6 +729,7 @@
 		6AC40E321C47A8FE0024FC63 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		6AC40E341C47A9060024FC63 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		6ADDB44F1B848C600012877A /* 1Password.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = 1Password.xcassets; sourceTree = "<group>"; };
+		78FCA36A8F23E1165871687D /* Pods-Yep.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yep.release.xcconfig"; path = "Pods/Target Support Files/Pods-Yep/Pods-Yep.release.xcconfig"; sourceTree = "<group>"; };
 		8409137C1B7DB173001C89D6 /* FriendRequestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FriendRequestView.swift; path = Views/FriendRequest/FriendRequestView.swift; sourceTree = "<group>"; };
 		840CD23B1B7B59D5000D2680 /* ShowStepViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShowStepViewController.swift; path = ViewControllers/Show/ShowStepViewController.swift; sourceTree = "<group>"; };
 		84385C431B8592120071130D /* ShowStepGeniusViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShowStepGeniusViewController.swift; path = ViewControllers/Show/ShowStepGeniusViewController.swift; sourceTree = "<group>"; };
@@ -752,12 +742,10 @@
 		848806B21B7B0230000C5424 /* Yep.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Yep.entitlements; sourceTree = "<group>"; };
 		848806B51B7B4F53000C5424 /* ShowViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShowViewController.swift; path = ViewControllers/Show/ShowViewController.swift; sourceTree = "<group>"; };
 		84C959881B731FD20017D3ED /* ChatBaseCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChatBaseCell.swift; path = Views/Cells/ChatBaseCell/ChatBaseCell.swift; sourceTree = "<group>"; };
-		88C96122C478C4D134F634F6 /* Pods-Yep.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yep.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Yep/Pods-Yep.debug.xcconfig"; sourceTree = "<group>"; };
 		92E0FFE31C5F38E400226B96 /* MZFayeClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MZFayeClient.h; sourceTree = "<group>"; };
 		92E0FFE41C5F38E400226B96 /* MZFayeClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MZFayeClient.m; sourceTree = "<group>"; };
 		92E0FFE51C5F38E400226B96 /* MZFayeMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MZFayeMessage.h; sourceTree = "<group>"; };
 		92E0FFE61C5F38E400226B96 /* MZFayeMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MZFayeMessage.m; sourceTree = "<group>"; };
-		C3146F0F60F2A38BC6E0FA66 /* Pods_Yep.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Yep.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -777,18 +765,10 @@
 				0AD7EA621AC3ED2100617758 /* CoreTelephony.framework in Frameworks */,
 				0AD7EA601AC3ED1900617758 /* CoreFoundation.framework in Frameworks */,
 				0AD7EA5E1AC3ED1200617758 /* CFNetwork.framework in Frameworks */,
-				B00500D7E943DDD27CF9C562 /* Pods_Yep.framework in Frameworks */,
-				F5195E9549502A903492570A /* BuddyBuildSDK.framework in Frameworks */,
 				0348E5E88555C3DC70D70865 /* AssetsLibrary.framework in Frameworks */,
 				27CDF0ACB80E10E6AC5596F6 /* CoreText.framework in Frameworks */,
 				B03D54CAD0F1D56AB9396D11 /* QuartzCore.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		0A8F54BD1AB67D11004AD60E /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				EB14A60AE134D00BD0A89645 /* Pods_Yep.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -843,8 +823,8 @@
 				0A8F54AD1AB67D11004AD60E /* Yep */,
 				0A8F54C31AB67D11004AD60E /* YepTests */,
 				0A8F54AC1AB67D11004AD60E /* Products */,
-				59CC1DE9D59AC08247B97B4F /* Pods */,
 				67B708B60AAD1DEA82A6A682 /* Frameworks */,
+				951256D59D8F83CBD8CB56E9 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -852,7 +832,6 @@
 			isa = PBXGroup;
 			children = (
 				0A8F54AB1AB67D11004AD60E /* Yep.app */,
-				0A8F54C01AB67D11004AD60E /* YepTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1381,6 +1360,7 @@
 			isa = PBXGroup;
 			children = (
 				502AE5341AB8649F005BD199 /* LoginByMobileViewController.swift */,
+				262176881CAA9BD900DC3097 /* LoginByMobileViewModel.swift */,
 				502AE5371AB866E3005BD199 /* LoginVerifyMobileViewController.swift */,
 			);
 			name = Login;
@@ -2297,15 +2277,6 @@
 			name = ContainerViews;
 			sourceTree = "<group>";
 		};
-		59CC1DE9D59AC08247B97B4F /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				88C96122C478C4D134F634F6 /* Pods-Yep.debug.xcconfig */,
-				4EEAF88E6C6D61E595249DF5 /* Pods-Yep.release.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
 		67B708B60AAD1DEA82A6A682 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -2321,11 +2292,10 @@
 				0AD7EA611AC3ED2100617758 /* CoreTelephony.framework */,
 				0AD7EA5F1AC3ED1900617758 /* CoreFoundation.framework */,
 				0AD7EA5D1AC3ED1200617758 /* CFNetwork.framework */,
-				C3146F0F60F2A38BC6E0FA66 /* Pods_Yep.framework */,
-				4CFCCF0915063E63493164A3 /* BuddyBuildSDK.framework */,
 				00E9240F12DD22E06A35F782 /* AssetsLibrary.framework */,
 				34A6628BE8C7FFA96376C5C6 /* CoreText.framework */,
 				4C73250AC8BB116924CA11C0 /* QuartzCore.framework */,
+				46FCB81D47F481192F302FF5 /* Pods_Yep.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -2431,6 +2401,15 @@
 			path = MZFayeClient;
 			sourceTree = "<group>";
 		};
+		951256D59D8F83CBD8CB56E9 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				42C798FA0B111E9E89187B41 /* Pods-Yep.debug.xcconfig */,
+				78FCA36A8F23E1165871687D /* Pods-Yep.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -2438,13 +2417,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0A8F54CA1AB67D11004AD60E /* Build configuration list for PBXNativeTarget "Yep" */;
 			buildPhases = (
-				6F60E0EF8ADE99106F3718B9 /* Check Pods Manifest.lock */,
+				2F0080D6ECEBD78150DF63B4 /* Check Pods Manifest.lock */,
 				0A8F54A71AB67D11004AD60E /* Sources */,
 				0A8F54A81AB67D11004AD60E /* Frameworks */,
 				0A8F54A91AB67D11004AD60E /* Resources */,
-				39615BAC5D2C17889BD12838 /* Embed Pods Frameworks */,
-				67B15DACB809FA624B07B937 /* Copy Pods Resources */,
 				0AFE75AD1AC43DD1005AA33E /* ShellScript */,
+				F14E18C8CE03FAAFA95344C6 /* Embed Pods Frameworks */,
+				556DE3E1AC8D2CC9BB46A812 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -2454,24 +2433,6 @@
 			productName = Yep;
 			productReference = 0A8F54AB1AB67D11004AD60E /* Yep.app */;
 			productType = "com.apple.product-type.application";
-		};
-		0A8F54BF1AB67D11004AD60E /* YepTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 0A8F54CD1AB67D11004AD60E /* Build configuration list for PBXNativeTarget "YepTests" */;
-			buildPhases = (
-				0A8F54BC1AB67D11004AD60E /* Sources */,
-				0A8F54BD1AB67D11004AD60E /* Frameworks */,
-				0A8F54BE1AB67D11004AD60E /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				0A8F54C21AB67D11004AD60E /* PBXTargetDependency */,
-			);
-			name = YepTests;
-			productName = YepTests;
-			productReference = 0A8F54C01AB67D11004AD60E /* YepTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -2486,25 +2447,21 @@
 				TargetAttributes = {
 					0A8F54AA1AB67D11004AD60E = {
 						CreatedOnToolsVersion = 6.3;
-						DevelopmentTeam = TKRALRXCKN;
+						DevelopmentTeam = HY634B3FW2;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.iOS = {
-								enabled = 1;
+								enabled = 0;
 							};
 							com.apple.BackgroundModes = {
-								enabled = 1;
+								enabled = 0;
 							};
 							com.apple.Push = {
-								enabled = 1;
+								enabled = 0;
 							};
 							com.apple.SafariKeychain = {
 								enabled = 1;
 							};
 						};
-					};
-					0A8F54BF1AB67D11004AD60E = {
-						CreatedOnToolsVersion = 6.3;
-						TestTargetID = 0A8F54AA1AB67D11004AD60E;
 					};
 				};
 			};
@@ -2523,7 +2480,6 @@
 			projectRoot = "";
 			targets = (
 				0A8F54AA1AB67D11004AD60E /* Yep */,
-				0A8F54BF1AB67D11004AD60E /* YepTests */,
 			);
 		};
 /* End PBXProject section */
@@ -2627,13 +2583,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0A8F54BE1AB67D11004AD60E /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -2650,22 +2599,22 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Fabric/run\" 3030ba006e21bcf8eb4a2127b6a7931ea6667486 1b6549ac285402b232e4718eda293559d8ed8df039017af3fa9593518395eef0";
 		};
-		39615BAC5D2C17889BD12838 /* Embed Pods Frameworks */ = {
+		2F0080D6ECEBD78150DF63B4 /* Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Embed Pods Frameworks";
+			name = "Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Yep/Pods-Yep-frameworks.sh\"\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		67B15DACB809FA624B07B937 /* Copy Pods Resources */ = {
+		556DE3E1AC8D2CC9BB46A812 /* Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2680,19 +2629,19 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Yep/Pods-Yep-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		6F60E0EF8ADE99106F3718B9 /* Check Pods Manifest.lock */ = {
+		F14E18C8CE03FAAFA95344C6 /* Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Check Pods Manifest.lock";
+			name = "Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Yep/Pods-Yep-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -2779,6 +2728,7 @@
 				501690181BFB18D20096C4F9 /* ChatLeftSocialWorkCell.swift in Sources */,
 				50E114F41ABBF9CC00F13000 /* Models.swift in Sources */,
 				848806B01B789A2D000C5424 /* EditSkillCell.swift in Sources */,
+				262176891CAA9BD900DC3097 /* LoginByMobileViewModel.swift in Sources */,
 				50485BCE1C56062400431AC7 /* ChatLeftRecallCell.swift in Sources */,
 				5018132C1BA3CFEF0025873C /* WeChatActivity.swift in Sources */,
 				5053AD551AF83B0F00B3CBFA /* ChatRightLocationCell.swift in Sources */,
@@ -2959,23 +2909,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0A8F54BC1AB67D11004AD60E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				0A8F54C71AB67D11004AD60E /* YepTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		0A8F54C21AB67D11004AD60E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0A8F54AA1AB67D11004AD60E /* Yep */;
-			targetProxy = 0A8F54C11AB67D11004AD60E /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		0A8F54B41AB67D11004AD60E /* Main.storyboard */ = {
@@ -3118,7 +3052,7 @@
 		};
 		0A8F54CB1AB67D11004AD60E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 88C96122C478C4D134F634F6 /* Pods-Yep.debug.xcconfig */;
+			baseConfigurationReference = 42C798FA0B111E9E89187B41 /* Pods-Yep.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Yep/Yep.entitlements;
@@ -3201,7 +3135,7 @@
 					"-framework",
 					"\"pop\"",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "Catch-Inc.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = org.dianqk.RxYep;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Yep/Yep-Bridging-Header.h";
@@ -3211,7 +3145,7 @@
 		};
 		0A8F54CC1AB67D11004AD60E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4EEAF88E6C6D61E595249DF5 /* Pods-Yep.release.xcconfig */;
+			baseConfigurationReference = 78FCA36A8F23E1165871687D /* Pods-Yep.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Yep/Yep.entitlements;
@@ -3294,44 +3228,11 @@
 					"-framework",
 					"\"pop\"",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "Catch-Inc.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = org.dianqk.RxYep;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Yep/Yep-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Release;
-		};
-		0A8F54CE1AB67D11004AD60E /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = "";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = YepTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				OTHER_SWIFT_FLAGS = "-D DEBUG -D STAGING_";
-				PRODUCT_BUNDLE_IDENTIFIER = "Catch-Inc.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Yep.app/Yep";
-			};
-			name = Debug;
-		};
-		0A8F54CF1AB67D11004AD60E /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = "";
-				INFOPLIST_FILE = YepTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "Catch-Inc.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Yep.app/Yep";
 			};
 			name = Release;
 		};
@@ -3352,15 +3253,6 @@
 			buildConfigurations = (
 				0A8F54CB1AB67D11004AD60E /* Debug */,
 				0A8F54CC1AB67D11004AD60E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		0A8F54CD1AB67D11004AD60E /* Build configuration list for PBXNativeTarget "YepTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				0A8F54CE1AB67D11004AD60E /* Debug */,
-				0A8F54CF1AB67D11004AD60E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

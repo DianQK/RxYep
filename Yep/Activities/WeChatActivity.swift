@@ -44,16 +44,18 @@ class WeChatActivity: AnyActivity {
         }
     }
 
-    init(type: Type, message: MonkeyKing.Message, finish: MonkeyKing.Finish) {
-
-        MonkeyKing.registerAccount(.WeChat(appID: YepConfig.ChinaSocialNetwork.WeChat.appID))
+    init(type: Type, message: MonkeyKing.Message, finish: MonkeyKing.SharedCompletionHandler) {
+        
+        MonkeyKing.registerAccount(MonkeyKing.Account.WeChat(appID: YepConfig.ChinaSocialNetwork.WeChat.appID, appKey: nil))
+// WeChat(appID: String, appKey: String?)
+//        MonkeyKing.registerAccount(MonkeyKing.Account.WeChat(appID: YepConfig.ChinaSocialNetwork.WeChat.appID))
 
         super.init(
             type: type.type,
             title: type.title,
             image: type.image,
             message: message,
-            finish: finish
+            completionHandler: finish
         )
     }
 }
