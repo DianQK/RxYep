@@ -15,21 +15,21 @@ typealias MobileInfo = (mobileNumber: String, area: String)
 
 class LoginByMobileViewModel {
     
-    let validatedAreaCode: Observable<Bool>
-    let validatedMobileNumber: Observable<Bool>
+    let validatedAreaCode: Driver<Bool>
+    let validatedMobileNumber: Driver<Bool>
     
-    let loginVerifyMobileEnabled: Observable<Bool>
+    let loginVerifyMobileEnabled: Driver<Bool>
     let loginVerifyMobileRequesting = Variable(false)
-    let loginVerifyMobileResult: Observable<Bool>
+    let loginVerifyMobileResult: Driver<RxYepResult<Bool>>
     let loginInfo = Variable(MobileInfo(mobileNumber: "", area: ""))
     
     private let disposeBag = DisposeBag()
     
     init(
         input: (
-        areaCode: Observable<String>,
-        mobileNumber: Observable<String>,
-        nextTap: Observable<Void>
+        areaCode: Driver<String>,
+        mobileNumber: Driver<String>,
+        nextTap: Driver<Void>
         )
         ) {
         
@@ -37,23 +37,22 @@ class LoginByMobileViewModel {
         
         validatedMobileNumber = input.mobileNumber.map { $0.isNotEmpty }
         
-        loginVerifyMobileEnabled = Observable.combineLatest(validatedAreaCode, validatedMobileNumber) { $0 && $1 }
+        loginVerifyMobileEnabled = Driver.combineLatest(validatedAreaCode, validatedMobileNumber) { $0 && $1 }
         // FIXME: - Add validated
         let loginVerifyMobileRequest = input.nextTap
-            .withLatestFrom(Observable.combineLatest(input.mobileNumber, input.areaCode) { MobileInfo(mobileNumber: $0.0, area: $0.1) } )
-            .shareReplay(1)
+            .withLatestFrom(Driver.combineLatest(input.mobileNumber, input.areaCode) { MobileInfo(mobileNumber: $0, area: $1) } )
         
         loginVerifyMobileResult = loginVerifyMobileRequest
             .flatMapLatest { rx_sendVerifyCodeOfMobile($0.0, withAreaCode: $0.1, useMethod: .SMS) }
-            .shareReplay(1)
         
-        [loginVerifyMobileRequest.map { _ in true }, loginVerifyMobileResult.map { _ in false }.catchErrorJustReturn(false)]
+        [loginVerifyMobileRequest.map { _ in true }, loginVerifyMobileResult.map { _ in false }]
             .toObservable()
             .merge()
             .bindTo(loginVerifyMobileRequesting)
             .addDisposableTo(disposeBag)
         
         loginVerifyMobileRequest
+            .asObservable()
             .bindTo(loginInfo)
             .addDisposableTo(disposeBag)
         

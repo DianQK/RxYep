@@ -449,7 +449,7 @@ enum VerifyCodeMethod: String {
     case Call = "call"
 }
 // MARK: - 验证手机号并请求验证码
-func rx_sendVerifyCodeOfMobile(mobile: String, withAreaCode areaCode: String, useMethod method: VerifyCodeMethod) -> Observable<Bool> {
+func rx_sendVerifyCodeOfMobile(mobile: String, withAreaCode areaCode: String, useMethod method: VerifyCodeMethod) -> Driver<RxYepResult<Bool>> {
     
     let requestParameters = [
         "mobile": mobile,
@@ -483,7 +483,7 @@ func sendVerifyCodeOfMobile(mobile: String, withAreaCode areaCode: String, useMe
     apiRequest({_ in}, baseURL: yepBaseURL, resource: resource, failure: failureHandler, completion: completion)
 }
 
-func rx_loginByMobile(mobile: String, withAreaCode areaCode: String, verifyCode: String) -> Observable<LoginUser> {
+func rx_loginByMobile(mobile: String, withAreaCode areaCode: String, verifyCode: String) -> Driver<RxYepResult<LoginUser>> {
     
     println("User login type is \(YepConfig.clientType())")
     

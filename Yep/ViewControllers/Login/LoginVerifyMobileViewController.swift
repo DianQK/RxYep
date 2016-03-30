@@ -16,9 +16,6 @@ import NSObject_Rx
 class LoginVerifyMobileViewController: UIViewController {
     
     var mobileInfo: MobileInfo!
-
-//    var mobile: String!
-//    var areaCode: String!
     
     var viewModel: LoginVerifyMobileViewModel!
 
@@ -63,8 +60,6 @@ class LoginVerifyMobileViewController: UIViewController {
         verifyCodeTextField.placeholder = " "
         verifyCodeTextField.backgroundColor = UIColor.whiteColor()
         verifyCodeTextField.textColor = UIColor.yepInputTextColor()
-//        verifyCodeTextField.delegate = self
-//        verifyCodeTextField.addTarget(self, action: #selector(LoginVerifyMobileViewController.textFieldDidChange(_:)), forControlEvents: .EditingChanged)
 
         callMePromptLabel.text = NSLocalizedString("Didn't get it?", comment: "")
         callMeButton.setTitle(NSLocalizedString("Call me", comment: ""), forState: .Normal)
@@ -75,8 +70,8 @@ class LoginVerifyMobileViewController: UIViewController {
         
         
         viewModel = LoginVerifyMobileViewModel(input: (
-            verifyCode: verifyCodeTextField.rx_text.asObservable(),
-            nextTap: nextButton.rx_tap.asObservable()),
+            verifyCode: verifyCodeTextField.rx_text.asDriver(),
+            nextTap: nextButton.rx_tap.asDriver()),
                                                 info: mobileInfo)
         
         viewModel.loginEnabled.asObservable()
@@ -94,34 +89,24 @@ class LoginVerifyMobileViewController: UIViewController {
             }
             .addDisposableTo(rx_disposeBag)
         
-        viewModel.loginResult.asObservable()
-            .observeOn(MainScheduler.instance)
-            .subscribe { [weak self] in
-            switch $0 {
-            case .Next(let loginUser):
+        viewModel.loginResult.driveNext { [weak self] result in
+            switch result {
+            case .Success(let loginUser):
                 saveTokenAndUserInfoOfLoginUser(loginUser)
-                
-                syncMyInfoAndDoFurtherAction {
-                }
-                
+                syncMyInfoAndDoFurtherAction { }
                 if let appDelegate = UIApplication.sharedApplication().delegate as? AppDelegate {
                     appDelegate.startMainStory()
                 }
-            case .Error(let error):
-                let error = error as! RxYepError
+            case .Failure(let error):
                 defaultFailureHandler(reason: error.reason, errorMessage: error.errorMessage)
-                
                 if let errorMessage = error.errorMessage {
                     self?.navigationItem.rightBarButtonItem?.enabled = false // FIXME: -
-                    YepAlert.rx_alertSorry(message: errorMessage, inViewController: self).subscribeNext { _ in
+                    YepAlert.alertSorry(message: errorMessage, inViewController: self) {
                         self?.verifyCodeTextField.becomeFirstResponder()
                     }
                 }
-            default: break
             }
-            }
-            .addDisposableTo(rx_disposeBag)
-        
+            }.addDisposableTo(rx_disposeBag)
         
     }
 
@@ -206,56 +191,6 @@ class LoginVerifyMobileViewController: UIViewController {
 //        })
     }
 
-    @objc private func next(sender: UIBarButtonItem) {
-//        login()
-    }
-
-//    private func login() {
-//
-//        view.endEditing(true)
-//
-//        guard let verifyCode = verifyCodeTextField.text else {
-//            return
-//        }
-//
-//        YepHUD.showActivityIndicator()
-//
-//        loginByMobile(mobile, withAreaCode: areaCode, verifyCode: verifyCode, failureHandler: { [weak self] (reason, errorMessage) in
-//            defaultFailureHandler(reason: reason, errorMessage: errorMessage)
-//
-//            YepHUD.hideActivityIndicator()
-//
-//            if let errorMessage = errorMessage {
-//                dispatch_async(dispatch_get_main_queue()) {
-//                    self?.nextButton.enabled = false
-//                }
-//
-//                YepAlert.alertSorry(message: errorMessage, inViewController: self, withDismissAction: {
-//                    dispatch_async(dispatch_get_main_queue()) {
-//                        self?.verifyCodeTextField.becomeFirstResponder()
-//                    }
-//                })
-//            }
-//
-//        }, completion: { loginUser in
-//
-//            println("\(loginUser)")
-//
-//            YepHUD.hideActivityIndicator()
-//
-//            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-//
-//                saveTokenAndUserInfoOfLoginUser(loginUser)
-//                
-//                syncMyInfoAndDoFurtherAction {
-//                }
-//
-//                if let appDelegate = UIApplication.sharedApplication().delegate as? AppDelegate {
-//                    appDelegate.startMainStory()
-//                }
-//            })
-//        })
-//    }
 }
 
 extension LoginVerifyMobileViewController: UITextFieldDelegate {

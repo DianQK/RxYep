@@ -54,12 +54,12 @@ class LoginByMobileViewController: BaseViewController {
         mobileNumberTextFieldTopConstraint.constant = Ruler.iPhoneVertical(30, 40, 50, 50).value
         
         viewModel = LoginByMobileViewModel(input: (
-            areaCode: areaCodeTextField.rx_text.asObservable(),
-            mobileNumber: mobileNumberTextField.rx_text.asObservable(),
-            nextTap: nextButton.rx_tap.asObservable()))
+            areaCode: areaCodeTextField.rx_text.asDriver(),
+            mobileNumber: mobileNumberTextField.rx_text.asDriver(),
+            nextTap: nextButton.rx_tap.asDriver()))
         
         // 是否可以去验证
-        viewModel.loginVerifyMobileEnabled
+        viewModel.loginVerifyMobileEnabled.asObservable()
             .bindTo(nextButton.rx_enabled)
             .addDisposableTo(rx_disposeBag)
         
@@ -75,25 +75,21 @@ class LoginByMobileViewController: BaseViewController {
             }
             .addDisposableTo(rx_disposeBag)
         
-        viewModel.loginVerifyMobileResult
-            .observeOn(MainScheduler.instance)
-            .subscribe { [weak self] event in
-            switch event {
-            case .Next(let result) where result == true:
+        viewModel.loginVerifyMobileResult.driveNext { [weak self] result in
+            switch result {
+            case .Success(let result) where result == true:
                 self?.showLoginVerifyMobile()
-            case .Next(let result) where result == false:
+            case .Success(let result) where result == false:
                 YepAlert.alertSorry(message: NSLocalizedString("Failed to send verification code!", comment: ""), inViewController: self, withDismissAction: { [weak self] in
                     self?.mobileNumberTextField.becomeFirstResponder()
                     })
-            case .Error(let error):
-                let error = error as! RxYepError
-                // TODO: -
-                YepAlert.rx_alertSorry(message: error.errorMessage, inViewController: self).subscribeNext { _ in
+            case .Failure(let error):
+                YepAlert.alertSorry(message: error.errorMessage, inViewController: self, withDismissAction: { [weak self] in
                     self?.mobileNumberTextField.becomeFirstResponder()
-                }.addDisposableTo(self!.rx_disposeBag)
+                    })
             default: break
             }
-        }.addDisposableTo(rx_disposeBag)
+            }.addDisposableTo(rx_disposeBag)
         
         areaCodeTextField
             .rx_controlEvent([.EditingChanged, .EditingDidBegin])
@@ -149,9 +145,6 @@ class LoginByMobileViewController: BaseViewController {
         
         if let info = sender as? [String: String] where segue.identifier == "showLoginVerifyMobile" {
             let vc = segue.destinationViewController as! LoginVerifyMobileViewController
-//            vc.mobile = info["mobile"]
-//            vc.areaCode = info["areaCode"]
-            
             vc.mobileInfo = MobileInfo(mobileNumber: info["mobile"]!, area: info["areaCode"]!)
         }
     }

@@ -119,23 +119,29 @@ class SessionDelegate: NSObject, NSURLSessionDelegate {
 let _sessionDelegate = SessionDelegate()
 #endif
 
+public enum RxYepResult<T> {
+    case Success(T)
+    case Failure(RxYepError)
+}
+
 public struct RxYepError: ErrorType {
     let reason: Reason
     let errorMessage: String?
 }
 
-public func rx_apiRequest<A>(modifyRequest: NSMutableURLRequest -> (), baseURL: NSURL, resource: Resource<A>?) -> Observable<A> {
+public func rx_apiRequest<A>(modifyRequest: NSMutableURLRequest -> (), baseURL: NSURL, resource: Resource<A>?) -> Driver<RxYepResult<A>> {
     return Observable.create { observer in
         
         apiRequest(modifyRequest, baseURL: baseURL, resource: resource, failure: { (reason, errorMessage) in
-            observer.onError(RxYepError(reason: reason, errorMessage: errorMessage))
+//            observer.onError(RxYepError(reason: reason, errorMessage: errorMessage))
+            observer.onNext(.Failure(RxYepError(reason: reason, errorMessage: errorMessage)))
             }, completion: { result in
-                observer.onNext(result)
+                observer.onNext(.Success(result))
                 observer.onCompleted()
         })
         // TODO: -
         return NopDisposable.instance
-    }
+    }.asDriver(onErrorJustReturn: RxYepResult.Failure(RxYepError(reason: .NoData, errorMessage: "未知错误")))
 }
 
 public func apiRequest<A>(modifyRequest: NSMutableURLRequest -> (), baseURL: NSURL, resource: Resource<A>?, failure: FailureHandler?, completion: A -> Void) {
