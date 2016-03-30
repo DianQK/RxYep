@@ -31,14 +31,6 @@ class LoginVerifyMobileViewController: UIViewController {
     @IBOutlet private weak var callMeButton: UIButton!
     @IBOutlet private weak var callMeButtonTopConstraint: NSLayoutConstraint!
 
-    private lazy var callMeTimer: NSTimer = {
-        let timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: #selector(LoginVerifyMobileViewController.tryCallMe(_:)), userInfo: nil, repeats: true)
-        return timer
-    }()
-
-    private var callMeInSeconds = YepConfig.callMeInSeconds()
-
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -108,19 +100,42 @@ class LoginVerifyMobileViewController: UIViewController {
             }
             }.addDisposableTo(rx_disposeBag)
         
-    }
-
-    override func viewWillAppear(animated: Bool) {
-        super.viewWillAppear(animated)
-        callMeButton.enabled = false
+        
+        viewModel.callMeTimer
+            .map { NSLocalizedString("Call me", comment: "") + ($0 > 1 ? " (\($0))" : "") }
+            .bindTo(callMeButton.rx_title)
+            .addDisposableTo(rx_disposeBag)
+        
+        [viewModel.callMeTimerEnabled, viewModel.calling.asObservable().map { !$0 }]
+            .toObservable()
+            .merge()
+            .bindTo(callMeButton.rx_enabled)
+            .addDisposableTo(rx_disposeBag)
+        
+        viewModel.calling.asObservable()
+            .map { NSLocalizedString(($0 ? "Calling" : "Call Me"), comment: "") }
+            .bindTo(callMeButton.rx_title)
+            .addDisposableTo(rx_disposeBag)
+        
+        callMeButton.rx_tap
+            .bindTo(viewModel.callMeTriger)
+            .addDisposableTo(rx_disposeBag)
+        // 不想接电话，先不测这里了~
+        viewModel.callMeResult
+            .driveNext { [unowned self] result in
+                switch result {
+                case .Success(let success): println("resendVoiceVerifyCode \(success)")
+                case .Failure(let error):  YepAlert.alertSorry(message: error.errorMessage, inViewController: self)
+                }
+            }
+            .addDisposableTo(rx_disposeBag)
+        
     }
 
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
 
         verifyCodeTextField.becomeFirstResponder()
-
-        callMeTimer.fire()
     }
 
     // MARK: Actions
@@ -128,81 +143,5 @@ class LoginVerifyMobileViewController: UIViewController {
     @objc private func activeAgain(notification: NSNotification) {
         verifyCodeTextField.becomeFirstResponder()
     }
-    
-    @objc private func tryCallMe(timer: NSTimer) {
-        let haveAppropriateInput = true
-        if !haveAppropriateInput {
-            if callMeInSeconds > 1 {
-                let callMeInSecondsString = NSLocalizedString("Call me", comment: "") + " (\(callMeInSeconds))"
-
-                UIView.performWithoutAnimation {
-                    self.callMeButton.setTitle(callMeInSecondsString, forState: .Normal)
-                    self.callMeButton.layoutIfNeeded()
-                }
-
-            } else {
-                UIView.performWithoutAnimation {
-                    self.callMeButton.setTitle(NSLocalizedString("Call me", comment: ""), forState: .Normal)
-                    self.callMeButton.layoutIfNeeded()
-                }
-
-                callMeButton.enabled = true
-            }
-        }
-
-        if (callMeInSeconds > 1) {
-            callMeInSeconds -= 1
-        }
-    }
-
-    @IBAction private func callMe(sender: UIButton) {
-        
-        callMeTimer.invalidate()
-
-        UIView.performWithoutAnimation {
-            self.callMeButton.setTitle(NSLocalizedString("Calling", comment: ""), forState: .Normal)
-            self.callMeButton.layoutIfNeeded()
-        }
-
-        delay(5) {
-            UIView.performWithoutAnimation {
-                self.callMeButton.setTitle(NSLocalizedString("Call me", comment: ""), forState: .Normal)
-                self.callMeButton.layoutIfNeeded()
-            }
-        }
-
-//        sendVerifyCodeOfMobile(mobile, withAreaCode: areaCode, useMethod: .Call, failureHandler: { [weak self] reason, errorMessage in
-//            defaultFailureHandler(reason: reason, errorMessage: errorMessage)
-//
-//            if let errorMessage = errorMessage {
-//
-//                YepAlert.alertSorry(message: errorMessage, inViewController: self)
-//
-//                dispatch_async(dispatch_get_main_queue()) {
-//                    UIView.performWithoutAnimation {
-//                        self?.callMeButton.setTitle(NSLocalizedString("Call me", comment: ""), forState: .Normal)
-//                        self?.callMeButton.layoutIfNeeded()
-//                    }
-//                }
-//            }
-//
-//        }, completion: { success in
-//            println("resendVoiceVerifyCode \(success)")
-//        })
-    }
 
 }
-
-extension LoginVerifyMobileViewController: UITextFieldDelegate {
-
-    /*
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
-        if haveAppropriateInput {
-            login()
-        }
-        
-        return true
-    }
-    */
-}
-

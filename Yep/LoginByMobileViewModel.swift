@@ -12,7 +12,7 @@ import RxOptional
 import NSObject_Rx
 
 typealias MobileInfo = (mobileNumber: String, area: String)
-
+// 总觉得应该做成一个 ViewModel
 class LoginByMobileViewModel {
     
     let validatedAreaCode: Driver<Bool>

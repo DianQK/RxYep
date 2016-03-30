@@ -17,8 +17,15 @@ class LoginVerifyMobileViewModel {
     let loginEnabled = Variable(false)
     let loginRequesting = Variable(false)
     let loginResult: Driver<RxYepResult<LoginUser>>
+    let callMeTimer: Observable<Int>
+    let callMeTimerEnabled: Observable<Bool>
+    
+    let calling = Variable(false)
     
     let mobileInfo: MobileInfo
+    
+    let callMeTriger = PublishSubject<Void>()
+    let callMeResult: Driver<RxYepResult<Bool>>
     
     private let disposeBag = DisposeBag()
     
@@ -52,11 +59,34 @@ class LoginVerifyMobileViewModel {
         loginResult = loginRequest
             .flatMapLatest { rx_loginByMobile(info.mobileNumber, withAreaCode: info.area, verifyCode: $0) }
         
-        
         [loginRequest.map { _ in true }, loginResult.map { _ in false}]
             .toObservable()
             .merge()
             .bindTo(loginRequesting)
+            .addDisposableTo(disposeBag)
+        
+        callMeTimer = Observable.interval(1, scheduler: MainScheduler.instance)
+            .flatMapLatest { time in
+                return time < YepConfig.callMeInSeconds() ? Observable.just(YepConfig.callMeInSeconds() - time) : Observable.empty()
+            }
+            .shareReplay(1)
+        
+        callMeTimerEnabled = callMeTimer.map { $0 == 1 }
+            .asObservable()
+            .distinctUntilChanged()
+        
+        let callMeRequest =  callMeTriger.asObservable()
+            .withLatestFrom(callMeTimerEnabled)
+            .takeWhile { $0 }
+            .asDriver(onErrorJustReturn: false)
+            .map { _ in info }
+        
+        callMeResult = callMeRequest.flatMapLatest { rx_sendVerifyCodeOfMobile($0.mobileNumber, withAreaCode: $0.area, useMethod: .Call) }
+        // TODO: - 整理 Calling 状态
+        [callMeRequest.map { _ in true }.asObservable(), callMeResult.map { _ in false }.asObservable()]
+            .toObservable()
+            .merge()
+            .bindTo(calling)
             .addDisposableTo(disposeBag)
         
     }
