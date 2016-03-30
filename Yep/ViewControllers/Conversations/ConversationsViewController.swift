@@ -306,18 +306,18 @@ class ConversationsViewController: SegueViewController {
             category.setActions([replyAction, replyOKAction], forContext: UIUserNotificationActionContext.Minimal)
             
             //JPUSHService.registerForRemoteNotificationTypes(
-            APService.registerForRemoteNotificationTypes(
-                UIUserNotificationType.Badge.rawValue |
-                    UIUserNotificationType.Sound.rawValue |
-                    UIUserNotificationType.Alert.rawValue, categories: [category])
+//            APService.registerForRemoteNotificationTypes(
+//                UIUserNotificationType.Badge.rawValue |
+//                    UIUserNotificationType.Sound.rawValue |
+//                    UIUserNotificationType.Alert.rawValue, categories: [category])
             
         } else {
             // 这里才开始向用户提示推送
             //JPUSHService.registerForRemoteNotificationTypes(
-            APService.registerForRemoteNotificationTypes(
-                UIUserNotificationType.Badge.rawValue |
-                    UIUserNotificationType.Sound.rawValue |
-                    UIUserNotificationType.Alert.rawValue, categories: nil)
+//            APService.registerForRemoteNotificationTypes(
+//                UIUserNotificationType.Badge.rawValue |
+//                    UIUserNotificationType.Sound.rawValue |
+//                    UIUserNotificationType.Alert.rawValue, categories: nil)
         }
     }
 

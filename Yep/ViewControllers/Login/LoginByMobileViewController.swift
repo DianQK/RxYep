@@ -86,10 +86,11 @@ class LoginByMobileViewController: BaseViewController {
                     self?.mobileNumberTextField.becomeFirstResponder()
                     })
             case .Error(let error):
-//                YepAlert.alertSorry(message: errorMessage, inViewController: self, withDismissAction: { () -> Void in
-//                        self?.mobileNumberTextField.becomeFirstResponder()
-//                })
-                assert(false)
+                let error = error as! RxYepError
+                // TODO: -
+                YepAlert.rx_alertSorry(message: error.errorMessage, inViewController: self).subscribeNext { _ in
+                    self?.mobileNumberTextField.becomeFirstResponder()
+                }.addDisposableTo(self!.rx_disposeBag)
             default: break
             }
         }.addDisposableTo(rx_disposeBag)
@@ -98,6 +99,16 @@ class LoginByMobileViewController: BaseViewController {
             .rx_controlEvent([.EditingChanged, .EditingDidBegin])
             .subscribeNext { [unowned self] in
                 self.adjustAreaCodeTextFieldWidth()
+            }
+            .addDisposableTo(rx_disposeBag)
+
+        areaCodeTextField.rx_controlEvent([.EditingDidEnd, .EditingDidEndOnExit])
+            .subscribeNext { [unowned self] in
+            // TODO: - request
+                self.view.layoutIfNeeded()
+                UIView.animateWithDuration(0.1, delay: 0.0, options: .CurveEaseInOut, animations: { _ in
+                    self.areaCodeTextFieldWidthConstraint.constant = 60
+                    }, completion: nil)
             }
             .addDisposableTo(rx_disposeBag)
         
@@ -119,71 +130,30 @@ class LoginByMobileViewController: BaseViewController {
         let size = text.sizeWithAttributes(areaCodeTextField.editing ? areaCodeTextField.typingAttributes : areaCodeTextField.defaultTextAttributes)
 
         let width = 32 + (size.width + 22) + 20
-
+        areaCodeTextFieldWidthConstraint.constant = max(width, 100)
         UIView.animateWithDuration(0.1, delay: 0.0, options: .CurveEaseInOut, animations: { _ in
-            self.areaCodeTextFieldWidthConstraint.constant = max(width, 100)
             self.view.layoutIfNeeded()
-        }, completion: { finished in
-        })
+        }, completion: nil)
     }
 
     private func showLoginVerifyMobile() {
         guard let areaCode = areaCodeTextField.text, mobile = mobileNumberTextField.text else {
             return
         }
-
         self.performSegueWithIdentifier("showLoginVerifyMobile", sender: ["mobile" : mobile, "areaCode": areaCode])
     }
 
     // MARK: Navigation
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "showLoginVerifyMobile" {
-
-            if let info = sender as? [String: String] {
-                let vc = segue.destinationViewController as! LoginVerifyMobileViewController
-
-                vc.mobile = info["mobile"]
-                vc.areaCode = info["areaCode"]
-            }
+        
+        if let info = sender as? [String: String] where segue.identifier == "showLoginVerifyMobile" {
+            let vc = segue.destinationViewController as! LoginVerifyMobileViewController
+//            vc.mobile = info["mobile"]
+//            vc.areaCode = info["areaCode"]
+            
+            vc.mobileInfo = MobileInfo(mobileNumber: info["mobile"]!, area: info["areaCode"]!)
         }
     }
 
 }
-
-extension LoginByMobileViewController: UITextFieldDelegate {
-
-    func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
-
-        if textField == areaCodeTextField {
-            adjustAreaCodeTextFieldWidth()
-        }
-
-        return true
-    }
-
-    func textFieldDidEndEditing(textField: UITextField) {
-
-        if textField == areaCodeTextField {
-            UIView.animateWithDuration(0.1, delay: 0.0, options: .CurveEaseInOut, animations: { _ in
-                self.areaCodeTextFieldWidthConstraint.constant = 60
-                self.view.layoutIfNeeded()
-            }, completion: { finished in
-            })
-        }
-    }
-
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
-
-        guard let areaCode = areaCodeTextField.text, mobile = mobileNumberTextField.text else {
-            return true
-        }
-
-        if !areaCode.isEmpty && !mobile.isEmpty {
-            tryShowLoginVerifyMobile()
-        }
-
-        return true
-    }
-}
-

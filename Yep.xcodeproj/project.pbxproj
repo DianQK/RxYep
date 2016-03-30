@@ -39,6 +39,7 @@
 		0AD7EA6C1AC3ED4300617758 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD7EA6B1AC3ED4300617758 /* Security.framework */; };
 		0AEB1CC61B0E742400178C9C /* Double+Yep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AEB1CC51B0E742400178C9C /* Double+Yep.swift */; };
 		262176891CAA9BD900DC3097 /* LoginByMobileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 262176881CAA9BD900DC3097 /* LoginByMobileViewModel.swift */; };
+		267446DA1CAAEDD8003C1A39 /* LoginVerifyMobileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 267446D91CAAEDD8003C1A39 /* LoginVerifyMobileViewModel.swift */; };
 		27CDF0ACB80E10E6AC5596F6 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A6628BE8C7FFA96376C5C6 /* CoreText.framework */; };
 		5008A1931B8DB8B500E94274 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5008A1951B8DB8B500E94274 /* Localizable.strings */; };
 		500A0B1C1B450C2100D49358 /* EditNicknameAndBadgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500A0B1B1B450C2100D49358 /* EditNicknameAndBadgeViewController.swift */; };
@@ -409,6 +410,7 @@
 		0AD7EA6B1AC3ED4300617758 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		0AEB1CC51B0E742400178C9C /* Double+Yep.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "Double+Yep.swift"; path = "Extensions/Double+Yep.swift"; sourceTree = "<group>"; };
 		262176881CAA9BD900DC3097 /* LoginByMobileViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginByMobileViewModel.swift; sourceTree = "<group>"; };
+		267446D91CAAEDD8003C1A39 /* LoginVerifyMobileViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginVerifyMobileViewModel.swift; sourceTree = "<group>"; };
 		34A6628BE8C7FFA96376C5C6 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		42C798FA0B111E9E89187B41 /* Pods-Yep.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yep.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Yep/Pods-Yep.debug.xcconfig"; sourceTree = "<group>"; };
 		46FCB81D47F481192F302FF5 /* Pods_Yep.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Yep.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -739,7 +741,6 @@
 		845E1A651B788EF3001E0789 /* EditSkillsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EditSkillsViewController.swift; path = ViewControllers/EditSkills/EditSkillsViewController.swift; sourceTree = "<group>"; };
 		848806AE1B789A2D000C5424 /* EditSkillCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EditSkillCell.swift; path = Views/Cells/EditSkill/EditSkillCell.swift; sourceTree = "<group>"; };
 		848806AF1B789A2D000C5424 /* EditSkillCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = EditSkillCell.xib; path = Views/Cells/EditSkill/EditSkillCell.xib; sourceTree = "<group>"; };
-		848806B21B7B0230000C5424 /* Yep.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Yep.entitlements; sourceTree = "<group>"; };
 		848806B51B7B4F53000C5424 /* ShowViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShowViewController.swift; path = ViewControllers/Show/ShowViewController.swift; sourceTree = "<group>"; };
 		84C959881B731FD20017D3ED /* ChatBaseCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChatBaseCell.swift; path = Views/Cells/ChatBaseCell/ChatBaseCell.swift; sourceTree = "<group>"; };
 		92E0FFE31C5F38E400226B96 /* MZFayeClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MZFayeClient.h; sourceTree = "<group>"; };
@@ -839,7 +840,6 @@
 		0A8F54AD1AB67D11004AD60E /* Yep */ = {
 			isa = PBXGroup;
 			children = (
-				848806B21B7B0230000C5424 /* Yep.entitlements */,
 				0A8F54B01AB67D11004AD60E /* AppDelegate.swift */,
 				0AD7EA581AC3EAF300617758 /* Yep-Bridging-Header.h */,
 				92E0FFE11C5F38E400226B96 /* Vendors */,
@@ -1362,6 +1362,7 @@
 				502AE5341AB8649F005BD199 /* LoginByMobileViewController.swift */,
 				262176881CAA9BD900DC3097 /* LoginByMobileViewModel.swift */,
 				502AE5371AB866E3005BD199 /* LoginVerifyMobileViewController.swift */,
+				267446D91CAAEDD8003C1A39 /* LoginVerifyMobileViewModel.swift */,
 			);
 			name = Login;
 			sourceTree = "<group>";
@@ -2421,7 +2422,6 @@
 				0A8F54A71AB67D11004AD60E /* Sources */,
 				0A8F54A81AB67D11004AD60E /* Frameworks */,
 				0A8F54A91AB67D11004AD60E /* Resources */,
-				0AFE75AD1AC43DD1005AA33E /* ShellScript */,
 				F14E18C8CE03FAAFA95344C6 /* Embed Pods Frameworks */,
 				556DE3E1AC8D2CC9BB46A812 /* Copy Pods Resources */,
 			);
@@ -2586,19 +2586,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0AFE75AD1AC43DD1005AA33E /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Fabric/run\" 3030ba006e21bcf8eb4a2127b6a7931ea6667486 1b6549ac285402b232e4718eda293559d8ed8df039017af3fa9593518395eef0";
-		};
 		2F0080D6ECEBD78150DF63B4 /* Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2805,6 +2792,7 @@
 				50F6D32E1C3CBE0000CB673C /* FeedUploadingErrorContainerView.swift in Sources */,
 				50C0909B1ADE234F00CC6389 /* RegisterPickSkillsViewController.swift in Sources */,
 				50F5AF951BBBCDA30033C9BC /* FeedMediaAddCell.swift in Sources */,
+				267446DA1CAAEDD8003C1A39 /* LoginVerifyMobileViewModel.swift in Sources */,
 				50FD753F1C20FF8D0050A382 /* FeedMediaContainerView.swift in Sources */,
 				508D16BD1ADCAF0400270E3F /* PullToRefreshView.swift in Sources */,
 				505262121C5205AB00292C6A /* UploadAttachmentOperation.swift in Sources */,
@@ -3055,7 +3043,7 @@
 			baseConfigurationReference = 42C798FA0B111E9E89187B41 /* Pods-Yep.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Yep/Yep.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -3098,8 +3086,6 @@
 					"\"DeviceGuru\"",
 					"-framework",
 					"\"FXBlurView\"",
-					"-framework",
-					"\"Fabric\"",
 					"-framework",
 					"\"Foundation\"",
 					"-framework",
@@ -3148,7 +3134,7 @@
 			baseConfigurationReference = 78FCA36A8F23E1165871687D /* Pods-Yep.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Yep/Yep.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -3191,8 +3177,6 @@
 					"\"DeviceGuru\"",
 					"-framework",
 					"\"FXBlurView\"",
-					"-framework",
-					"\"Fabric\"",
 					"-framework",
 					"\"Foundation\"",
 					"-framework",

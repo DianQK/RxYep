@@ -15,7 +15,6 @@ typealias MobileInfo = (mobileNumber: String, area: String)
 
 class LoginByMobileViewModel {
     
-    
     let validatedAreaCode: Observable<Bool>
     let validatedMobileNumber: Observable<Bool>
     
@@ -39,17 +38,16 @@ class LoginByMobileViewModel {
         validatedMobileNumber = input.mobileNumber.map { $0.isNotEmpty }
         
         loginVerifyMobileEnabled = Observable.combineLatest(validatedAreaCode, validatedMobileNumber) { $0 && $1 }
-        
+        // FIXME: - Add validated
         let loginVerifyMobileRequest = input.nextTap
             .withLatestFrom(Observable.combineLatest(input.mobileNumber, input.areaCode) { MobileInfo(mobileNumber: $0.0, area: $0.1) } )
             .shareReplay(1)
         
         loginVerifyMobileResult = loginVerifyMobileRequest
-            .flatMapLatest {
-                rx_sendVerifyCodeOfMobile($0.0, withAreaCode: $0.1, useMethod: .SMS)
-        }.shareReplay(1)
+            .flatMapLatest { rx_sendVerifyCodeOfMobile($0.0, withAreaCode: $0.1, useMethod: .SMS) }
+            .shareReplay(1)
         
-        [loginVerifyMobileRequest.map { _ in true }, loginVerifyMobileResult.map { _ in false }]
+        [loginVerifyMobileRequest.map { _ in true }, loginVerifyMobileResult.map { _ in false }.catchErrorJustReturn(false)]
             .toObservable()
             .merge()
             .bindTo(loginVerifyMobileRequesting)

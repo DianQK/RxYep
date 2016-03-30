@@ -483,6 +483,42 @@ func sendVerifyCodeOfMobile(mobile: String, withAreaCode areaCode: String, useMe
     apiRequest({_ in}, baseURL: yepBaseURL, resource: resource, failure: failureHandler, completion: completion)
 }
 
+func rx_loginByMobile(mobile: String, withAreaCode areaCode: String, verifyCode: String) -> Observable<LoginUser> {
+    
+    println("User login type is \(YepConfig.clientType())")
+    
+    let requestParameters: JSONDictionary = [
+        "mobile": mobile,
+        "phone_code": areaCode,
+        "verify_code": verifyCode,
+        "client": YepConfig.clientType(),
+        "expiring": 0, // 永不过期
+    ]
+    
+    let parse: JSONDictionary -> LoginUser? = { data in
+        
+        //println("loginByMobile: \(data)")
+        
+        if let accessToken = data["access_token"] as? String {
+            if let user = data["user"] as? [String: AnyObject] {
+                if
+                    let userID = user["id"] as? String,
+                    let nickname = user["nickname"] as? String,
+                    let pusherID = user["pusher_id"] as? String {
+                    let username = user["username"] as? String
+                    let avatarURLString = user["avatar_url"] as? String
+                    return LoginUser(accessToken: accessToken, userID: userID, username: username, nickname: nickname, avatarURLString: avatarURLString, pusherID: pusherID)
+                }
+            }
+        }
+        
+        return nil
+    }
+    
+    let resource = jsonResource(path: "/v1/auth/token_by_mobile", method: .POST, requestParameters: requestParameters, parse: parse)
+    return rx_apiRequest({_ in}, baseURL: yepBaseURL, resource: resource)
+}
+
 func loginByMobile(mobile: String, withAreaCode areaCode: String, verifyCode: String, failureHandler: FailureHandler?, completion: LoginUser -> Void) {
 
     println("User login type is \(YepConfig.clientType())")

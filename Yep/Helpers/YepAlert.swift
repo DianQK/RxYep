@@ -8,8 +8,34 @@
 
 import UIKit
 import Proposer
+import RxSwift
+import RxCocoa
+//import RxOptional
 
 class YepAlert {
+    
+    class func rx_alert(title title: String, message: String? = nil, dismissTitle: String, inViewController viewController: UIViewController?) -> Observable<UIAlertAction> {
+        
+        MainScheduler.ensureExecutingOnScheduler()
+        
+        return Observable.create { observer in
+         let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
+            
+            let action = UIAlertAction(title: dismissTitle, style: .Default) { action in
+                observer.onNext(action)
+                observer.onCompleted()
+            }
+            
+            alertController.addAction(action)
+            
+            viewController?.presentViewController(alertController, animated: true, completion: nil)
+            
+            return AnonymousDisposable {
+                alertController.dismissViewControllerAnimated(true, completion: nil)
+            }
+        }
+        
+    }
 
     class func alert(title title: String, message: String?, dismissTitle: String, inViewController viewController: UIViewController?, withDismissAction dismissAction: (() -> Void)?) {
 
@@ -26,6 +52,10 @@ class YepAlert {
 
             viewController?.presentViewController(alertController, animated: true, completion: nil)
         }
+    }
+    
+    class func rx_alertSorry(message message: String?, inViewController viewController: UIViewController?) -> Observable<UIAlertAction> {
+        return rx_alert(title: NSLocalizedString("Sorry", comment: ""), message: message, dismissTitle: NSLocalizedString("OK", comment: ""), inViewController: viewController)
     }
 
     class func alertSorry(message message: String?, inViewController viewController: UIViewController?, withDismissAction dismissAction: () -> Void) {

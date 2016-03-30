@@ -11,7 +11,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>Rx$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -41,29 +41,6 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>249</string>
-	<key>Fabric</key>
-	<dict>
-		<key>APIKey</key>
-		<string>3030ba006e21bcf8eb4a2127b6a7931ea6667486</string>
-		<key>Kits</key>
-		<array>
-			<dict>
-				<key>KitInfo</key>
-				<dict/>
-				<key>KitName</key>
-				<string>Crashlytics</string>
-			</dict>
-			<dict>
-				<key>KitInfo</key>
-				<dict>
-					<key>apikey</key>
-					<string>f0584c1b669d414ba992f7c467e6e16a</string>
-				</dict>
-				<key>KitName</key>
-				<string>Appsee</string>
-			</dict>
-		</array>
-	</dict>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>org-appextension-feature-password-management</string>

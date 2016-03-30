@@ -7,12 +7,12 @@
 //
 
 import UIKit
-import Fabric
+//import Fabric
 import AVFoundation
 import RealmSwift
 import MonkeyKing
 import Navi
-import Appsee
+//import Appsee
 
 
 @UIApplicationMain
@@ -39,11 +39,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // 默认将 Realm 放在 App Group 里
 
-        let directory: NSURL = NSFileManager.defaultManager().containerURLForSecurityApplicationGroupIdentifier(YepConfig.appGroupID)!
-        let realmPath = directory.URLByAppendingPathComponent("db.realm").path!
+//        let directory: NSURL = NSFileManager.defaultManager().containerURLForSecurityApplicationGroupIdentifier(YepConfig.appGroupID)!
+//        let realmPath = directory.URLByAppendingPathComponent("db.realm").path!
 
-        return Realm.Configuration(path: realmPath, schemaVersion: 30, migrationBlock: { migration, oldSchemaVersion in
-        })
+        return Realm.Configuration.defaultConfiguration
+//        return Realm.Configuration(path: realmPath, schemaVersion: 30, migrationBlock: { migration, oldSchemaVersion in
+//        })
     }
 
     enum RemoteNotificationType: String {
@@ -81,7 +82,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         delay(0.5) {
             //Fabric.with([Crashlytics.self])
-            Fabric.with([Appsee.self])
+//            Fabric.with([Appsee.self])
 
             /*
             #if STAGING
@@ -91,7 +92,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             #endif
             JPUSHService.setupWithOption(launchOptions, appKey: "e521aa97cd4cd4eba5b73669", channel: "AppStore", apsForProduction: apsForProduction)
             */
-            APService.setupWithOption(launchOptions)
+//            APService.setupWithOption(launchOptions)
         }
         
         let _ = try? AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayAndRecord, withOptions: AVAudioSessionCategoryOptions.DefaultToSpeaker)
@@ -235,7 +236,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         println("didReceiveRemoteNotification: \(userInfo)")
         //JPUSHService.handleRemoteNotification(userInfo)
-        APService.handleRemoteNotification(userInfo)
+//        APService.handleRemoteNotification(userInfo)
         
         guard YepUserDefaults.isLogined, let type = userInfo["type"] as? String, remoteNotificationType = RemoteNotificationType(rawValue: type) else {
             completionHandler(UIBackgroundFetchResult.NoData)
@@ -460,8 +461,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         //JPUSHService.registerDeviceToken(deviceToken)
         //JPUSHService.setTags(Set(["iOS"]), alias: pusherID, callbackSelector:nil, object: nil)
-        APService.registerDeviceToken(deviceToken)
-        APService.setTags(Set(["iOS"]), alias: pusherID, callbackSelector:nil, object: nil)
+//        APService.registerDeviceToken(deviceToken)
+//        APService.setTags(Set(["iOS"]), alias: pusherID, callbackSelector:nil, object: nil)
     }
 
     func tagsAliasCallback(iResCode: Int, tags: NSSet, alias: NSString) {
