@@ -62,9 +62,7 @@ class FeedsViewController: BaseViewController {
     }
 
     private func filterItemsWithCurrentSortStyle(currentSortStyle: FeedSortStyle) -> [ActionSheetView.Item] {
-        var items = filterStyles.map({
-            filterItemWithSortStyle($0, currentSortStyle: currentSortStyle)
-        })
+        var items = filterStyles.map { filterItemWithSortStyle($0, currentSortStyle: currentSortStyle) }
         items.append(.Cancel)
         return items
     }

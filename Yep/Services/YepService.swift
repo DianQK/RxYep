@@ -62,6 +62,32 @@ func saveTokenAndUserInfoOfLoginUser(loginUser: LoginUser) {
 
 // MARK: - Register
 
+func rx_validateMobile(mobile: String, withAreaCode areaCode: String) -> Driver<RxYepResult<(Bool, String)>> {
+    let requestParameters = [
+        "mobile": mobile,
+        "phone_code": areaCode,
+        ]
+    
+    let parse: JSONDictionary -> (Bool, String)? = { data in
+        println("data: \(data)")
+        if let available = data["available"] as? Bool {
+            if available {
+                return (available, "")
+            } else {
+                if let message = data["message"] as? String {
+                    return (available, message)
+                }
+            }
+        }
+        
+        return (false, "")
+    }
+    
+    let resource = jsonResource(path: "/v1/users/mobile_validate", method: .GET, requestParameters: requestParameters, parse: parse)
+    
+    return rx_apiRequest({_ in}, baseURL: yepBaseURL, resource: resource)
+}
+
 func validateMobile(mobile: String, withAreaCode areaCode: String, failureHandler: FailureHandler?, completion: ((Bool, String)) -> Void) {
     let requestParameters = [
         "mobile": mobile,
@@ -86,6 +112,30 @@ func validateMobile(mobile: String, withAreaCode areaCode: String, failureHandle
     let resource = jsonResource(path: "/v1/users/mobile_validate", method: .GET, requestParameters: requestParameters, parse: parse)
 
     apiRequest({_ in}, baseURL: yepBaseURL, resource: resource, failure: failureHandler, completion: completion)
+}
+
+func rx_registerMobile(mobile: String, withAreaCode areaCode: String, nickname: String) -> Driver<RxYepResult<Bool>> {
+    let requestParameters: JSONDictionary = [
+        "mobile": mobile,
+        "phone_code": areaCode,
+        "nickname": nickname,
+        "longitude": 0, // TODO: 注册时不好提示用户访问位置，或许设置技能或用户利用位置查找好友时再提示并更新位置信息
+        "latitude": 0
+    ]
+    
+    let parse: JSONDictionary -> Bool? = { data in
+        if let state = data["state"] as? String {
+            if state == "blocked" {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    let resource = jsonResource(path: "/v1/registration/create", method: .POST, requestParameters: requestParameters, parse: parse)
+    
+    return rx_apiRequest({_ in}, baseURL: yepBaseURL, resource: resource)
 }
 
 func registerMobile(mobile: String, withAreaCode areaCode: String, nickname: String, failureHandler: FailureHandler?, completion: Bool -> Void) {

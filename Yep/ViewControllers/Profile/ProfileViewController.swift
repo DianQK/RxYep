@@ -1715,7 +1715,7 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
                             
                                 self.socialAccount = SocialAccount(rawValue: providerName)
 
-                                if #available(iOS 9.0, *) {
+//                                if #available(iOS 9.0, *) {
 
                                     guard let accessToken = YepUserDefaults.v1AccessToken.value else {
                                         performSegueWithIdentifier("presentOAuth", sender: providerName)
@@ -1729,9 +1729,9 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
                                         safariViewController.dismissViewControllerAnimated(true, completion: nil)
                                     }
 
-                                } else {
-                                    performSegueWithIdentifier("presentOAuth", sender: providerName)
-                                }
+//                                } else {
+//                                    performSegueWithIdentifier("presentOAuth", sender: providerName)
+//                                }
                                 
                             } else {
                                 performSegueWithIdentifier("presentOAuth", sender: providerName)

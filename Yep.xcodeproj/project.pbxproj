@@ -41,6 +41,7 @@
 		262176891CAA9BD900DC3097 /* LoginByMobileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 262176881CAA9BD900DC3097 /* LoginByMobileViewModel.swift */; };
 		265D7B7A1CABEB5700B6B630 /* RxButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 265D7B791CABEB5700B6B630 /* RxButton.swift */; };
 		267446DA1CAAEDD8003C1A39 /* LoginVerifyMobileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 267446D91CAAEDD8003C1A39 /* LoginVerifyMobileViewModel.swift */; };
+		269CAAB81CACABC500057E87 /* RegisterPickMobileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 269CAAB71CACABC500057E87 /* RegisterPickMobileViewModel.swift */; };
 		27CDF0ACB80E10E6AC5596F6 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A6628BE8C7FFA96376C5C6 /* CoreText.framework */; };
 		5008A1931B8DB8B500E94274 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5008A1951B8DB8B500E94274 /* Localizable.strings */; };
 		500A0B1C1B450C2100D49358 /* EditNicknameAndBadgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500A0B1B1B450C2100D49358 /* EditNicknameAndBadgeViewController.swift */; };
@@ -413,6 +414,7 @@
 		262176881CAA9BD900DC3097 /* LoginByMobileViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginByMobileViewModel.swift; sourceTree = "<group>"; };
 		265D7B791CABEB5700B6B630 /* RxButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RxButton.swift; sourceTree = "<group>"; };
 		267446D91CAAEDD8003C1A39 /* LoginVerifyMobileViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginVerifyMobileViewModel.swift; sourceTree = "<group>"; };
+		269CAAB71CACABC500057E87 /* RegisterPickMobileViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegisterPickMobileViewModel.swift; sourceTree = "<group>"; };
 		34A6628BE8C7FFA96376C5C6 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		42C798FA0B111E9E89187B41 /* Pods-Yep.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yep.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Yep/Pods-Yep.debug.xcconfig"; sourceTree = "<group>"; };
 		46FCB81D47F481192F302FF5 /* Pods_Yep.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Yep.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1307,6 +1309,7 @@
 			children = (
 				502AE51D1AB712D2005BD199 /* RegisterPickNameViewController.swift */,
 				502AE5301AB85067005BD199 /* RegisterPickMobileViewController.swift */,
+				269CAAB71CACABC500057E87 /* RegisterPickMobileViewModel.swift */,
 				502AE5321AB86020005BD199 /* RegisterVerifyMobileViewController.swift */,
 				5099B9C61AB99F7B002F940B /* RegisterPickAvatarViewController.swift */,
 				50C0909A1ADE234F00CC6389 /* RegisterPickSkillsViewController.swift */,
@@ -2732,6 +2735,7 @@
 				50485BCE1C56062400431AC7 /* ChatLeftRecallCell.swift in Sources */,
 				5018132C1BA3CFEF0025873C /* WeChatActivity.swift in Sources */,
 				5053AD551AF83B0F00B3CBFA /* ChatRightLocationCell.swift in Sources */,
+				269CAAB81CACABC500057E87 /* RegisterPickMobileViewModel.swift in Sources */,
 				50A9D4571ACD393A000B2599 /* YepWaverView.swift in Sources */,
 				8409137D1B7DB173001C89D6 /* FriendRequestView.swift in Sources */,
 				50A640E51B6F41E00050E4A3 /* DoNotDisturbSwitchCell.swift in Sources */,
@@ -3068,7 +3072,7 @@
 				);
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = Yep/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3159,7 +3163,7 @@
 				);
 				GCC_OPTIMIZATION_LEVEL = s;
 				INFOPLIST_FILE = Yep/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",

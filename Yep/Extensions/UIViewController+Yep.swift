@@ -118,14 +118,14 @@ extension UIViewController {
 
     func yep_openURL(URL: NSURL) {
 
-        if #available(iOS 9.0, *) {
+//        if #available(iOS 9.0, *) {
 
             let safariViewController = SFSafariViewController(URL: URL)
             presentViewController(safariViewController, animated: true, completion: nil)
 
-        } else {
-            UIApplication.sharedApplication().openURL(URL)
-        }
+//        } else {
+//            UIApplication.sharedApplication().openURL(URL)
+//        }
     }
 }
 

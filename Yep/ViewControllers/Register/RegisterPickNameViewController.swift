@@ -8,6 +8,10 @@
 
 import UIKit
 import Ruler
+import RxSwift
+import RxCocoa
+import NSObject_Rx
+import RxOptional
 
 class RegisterPickNameViewController: BaseViewController {
 
@@ -18,18 +22,6 @@ class RegisterPickNameViewController: BaseViewController {
 
     @IBOutlet private weak var nameTextField: BorderTextField!
     @IBOutlet private weak var nameTextFieldTopConstraint: NSLayoutConstraint!
-    
-    private lazy var nextButton: UIBarButtonItem = {
-        let button = UIBarButtonItem(title: NSLocalizedString("Next", comment: ""), style: .Plain, target: self, action: #selector(RegisterPickNameViewController.next(_:)))
-        return button
-    }()
-
-    private var isDirty = false {
-        willSet {
-            nextButton.enabled = newValue
-            promptTermsLabel.alpha = newValue ? 1.0 : 0.5
-        }
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,6 +31,9 @@ class RegisterPickNameViewController: BaseViewController {
         view.backgroundColor = UIColor.yepViewBackgroundColor()
 
         navigationItem.titleView = NavigationTitleLabel(title: NSLocalizedString("Sign up", comment: ""))
+        
+        let nextButton = UIBarButtonItem()
+        nextButton.title = NSLocalizedString("Next", comment: "")
 
         navigationItem.rightBarButtonItem = nextButton
 
@@ -62,24 +57,47 @@ class RegisterPickNameViewController: BaseViewController {
         promptTermsLabel.alpha = 0.5
 
         promptTermsLabel.userInteractionEnabled = true
-        let tap = UITapGestureRecognizer(target: self, action: #selector(RegisterPickNameViewController.tapTerms(_:)))
+        let tap = UITapGestureRecognizer()
         promptTermsLabel.addGestureRecognizer(tap)
 
         nameTextField.backgroundColor = UIColor.whiteColor()
         nameTextField.textColor = UIColor.yepInputTextColor()
         nameTextField.placeholder = " "//NSLocalizedString("Nickname", comment: "")
-        nameTextField.delegate = self
-        nameTextField.addTarget(self, action: #selector(RegisterPickNameViewController.textFieldDidChange(_:)), forControlEvents: .EditingChanged)
 
         pickNamePromptLabelTopConstraint.constant = Ruler.iPhoneVertical(30, 50, 60, 60).value
         nameTextFieldTopConstraint.constant = Ruler.iPhoneVertical(30, 40, 50, 50).value
 
         nextButton.enabled = false
-    }
-
-    override func viewWillAppear(animated: Bool) {
-        super.viewWillAppear(animated)
-
+        
+        let trimmingNameText = nameTextField.rx_text
+            .map { $0.trimming(.WhitespaceAndNewline) }
+            .shareReplay(1)
+        
+        trimmingNameText.map { $0.isNotEmpty }
+            .bindNext { [unowned self] in
+            nextButton.enabled = $0
+            self.promptTermsLabel.alpha = $0 ? 1.0 : 0.5
+            }
+            .addDisposableTo(rx_disposeBag)
+        // 返回和点击 Next 都应该进入下一步
+        [nameTextField.rx_controlEvent([.EditingDidEndOnExit, .EditingDidEnd]), nextButton.rx_tap]
+            .toObservable()
+            .merge()
+            .withLatestFrom(trimmingNameText)
+            .filter { $0.isNotEmpty }
+            .subscribeNext { [unowned self] in
+                YepUserDefaults.nickname.value = $0
+                self.performSegueWithIdentifier("showRegisterPickMobile", sender: nil)
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        tap.rx_event
+            .subscribeNext { [unowned self] _ in
+                if let URL = NSURL(string: YepConfig.termsURLString) {
+                    self.yep_openURL(URL)
+                }
+            }
+            .addDisposableTo(rx_disposeBag)
     }
 
     override func viewDidAppear(animated: Bool) {
@@ -88,52 +106,4 @@ class RegisterPickNameViewController: BaseViewController {
         nameTextField.becomeFirstResponder()
     }
 
-    // MARK: Actions
-
-    @objc private func tapTerms(sender: UITapGestureRecognizer) {
-        if let URL = NSURL(string: YepConfig.termsURLString) {
-            yep_openURL(URL)
-        }
-    }
-
-    @objc private func textFieldDidChange(textField: UITextField) {
-        guard let text = textField.text else {
-            return
-        }
-
-        isDirty = !text.isEmpty
-    }
-
-    @objc private func next(sender: UIBarButtonItem) {
-        showRegisterPickMobile()
-    }
-
-    private func showRegisterPickMobile() {
-
-        guard let text = nameTextField.text else {
-            return
-        }
-
-        let nickname = text.trimming(.WhitespaceAndNewline)
-        YepUserDefaults.nickname.value = nickname
-
-        performSegueWithIdentifier("showRegisterPickMobile", sender: nil)
-    }
 }
-
-extension RegisterPickNameViewController: UITextFieldDelegate {
-    
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
-
-        guard let text = textField.text else {
-            return true
-        }
-
-        if !text.isEmpty {
-            showRegisterPickMobile()
-        }
-
-        return true
-    }
-}
-

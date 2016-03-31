@@ -144,16 +144,15 @@ class RegisterPickAvatarViewController: SegueViewController {
     // MARK: Helpers
 
     private func deviceWithMediaType(mediaType: String, preferringPosition position: AVCaptureDevicePosition) -> AVCaptureDevice? {
-        let devices = AVCaptureDevice.devicesWithMediaType(mediaType)
-        var captureDevice = devices.first as? AVCaptureDevice
-        for device in devices as! [AVCaptureDevice] {
-            if device.position == position {
-                captureDevice = device
-                break
-            }
-        }
-
-        return captureDevice
+        let devices = AVCaptureDevice.devicesWithMediaType(mediaType) as! [AVCaptureDevice]
+//        var captureDevice = devices.first
+//        for device in devices where device.position == position {
+//                captureDevice = device
+//                break
+//        }
+//        return captureDevice
+        /// 妥妥的
+        return devices.reduce((devices.first, position)) { $0.1 == $1.position ? ($1, $0.1) : $0 }.0
     }
 
     // MARK: Actions
