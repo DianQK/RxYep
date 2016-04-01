@@ -24,3 +24,13 @@ extension UITableView {
     }
     
 }
+
+extension UIBarButtonItem {
+    
+    public var rx_title: AnyObserver<String?> {
+        return UIBindingObserver(UIElement: self) { barButton, title in
+            barButton.title = title
+        }.asObserver()
+    }
+    
+}

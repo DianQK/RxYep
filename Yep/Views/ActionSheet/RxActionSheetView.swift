@@ -180,25 +180,24 @@ private class RxActionSheetCheckCell: UITableViewCell {
 class RxActionSheetView: UIView {
     
     enum Item {
-        case Default(title: String, titleColor: UIColor, action: () -> Bool)
-        case Detail(title: String, titleColor: UIColor, action: () -> Void)
-        case Switch(title: String, titleColor: UIColor, switchOn: Bool, action: (switchOn: Bool) -> Void)
-        case Check(title: String, titleColor: UIColor, checked: Bool, action: () -> Void)
+        case Default(title: String, titleColor: UIColor)
+        case Detail(title: String, titleColor: UIColor)
+        case Switch(title: String, titleColor: UIColor, switchOn: Bool)
+        case Check(title: String, titleColor: UIColor, checked: Bool)
         case Cancel
     }
     
-    var items: [Item]
-    
     let rx_items = Variable<[Item]>([])
+    
+    let rx_itemSelected = PublishSubject<(Item, Int)>()
     
     private let rowHeight: CGFloat = 60
     
     private var totalHeight: CGFloat {
-        return CGFloat(items.count) * rowHeight
+        return CGFloat(rx_items.value.count) * rowHeight
     }
     
     init(items: [Item]) {
-        self.items = items
         
         super.init(frame: CGRect.zero)
         
@@ -288,26 +287,27 @@ class RxActionSheetView: UIView {
         rx_items.asObservable()
             .bindTo(tableView.rx_itemsWithCellFactory) { (tableView, index, item) in
                 switch item {
-                case let .Default(title, titleColor, _):
+                case let .Default(title, titleColor):
                     let cell = tableView.dequeueReusableCellWithIdentifier(RxActionSheetDefaultCell.reuseIdentifier) as! RxActionSheetDefaultCell
                     cell.colorTitleLabel.text = title
                     cell.colorTitleLabelTextColor = titleColor
                     return cell
                     
-                case let .Detail(title, titleColor, _):
+                case let .Detail(title, titleColor):
                     let cell = tableView.dequeueReusableCellWithIdentifier(RxActionSheetDetailCell.reuseIdentifier) as! RxActionSheetDetailCell
                     cell.textLabel?.text = title
                     cell.textLabel?.textColor = titleColor
                     return cell
-                case let .Switch(title, titleColor, switchOn, action):
+                case let .Switch(title, titleColor, switchOn):
                     let cell = tableView.dequeueReusableCellWithIdentifier(RxActionSheetSwitchCell.reuseIdentifier) as! RxActionSheetSwitchCell
                     cell.textLabel?.text = title
                     cell.textLabel?.textColor = titleColor
                     cell.checkedSwitch.on = switchOn
-                    cell.action = action
+                    // TODO: - 重新添加 action
+//                    cell.action = action
                     return cell
                     
-                case let .Check(title, titleColor, checked, _):
+                case let .Check(title, titleColor, checked):
                     let cell = tableView.dequeueReusableCellWithIdentifier(RxActionSheetCheckCell.reuseIdentifier) as! RxActionSheetCheckCell
                     cell.colorTitleLabel.text = title
                     cell.colorTitleLabelTextColor = titleColor
@@ -325,24 +325,32 @@ class RxActionSheetView: UIView {
         tableView.rx_modelItemSelected(Item).subscribeNext { [unowned self] item, ip in
             defer {
                 self.tableView.deselectRowAtIndexPath(ip, animated: true)
+                // TODO: 修改 hide 逻辑
+                self.hide()
             }
-            
             switch item {
-                
-            case .Default(_, _, let action): if action() { self.hide() }
-
-            case .Detail(_, _, let action): self.hideAndDo { action() }
-                
-            case .Switch: break
-                
-            case .Check(_, _, _, let action):
-                action()
-                self.hide()
-                
-            case .Cancel:
-                self.hide()
+            case .Check, .Default, .Detail:
+                self.rx_itemSelected.on(.Next(item, ip.row))
+            case .Cancel, .Switch:
                 break
             }
+            
+//            switch item {
+//                
+//            case .Default(_, _, let action): if action() { self.hide() }
+//
+//            case .Detail(_, _, let action): self.hideAndDo { action() }
+//                
+//            case .Switch: break
+//                
+//            case .Check(_, _, _, let action):
+//                action()
+//                self.hide()
+//                
+//            case .Cancel:
+//                self.hide()
+//                break
+//            }
         }.addDisposableTo(rx_disposeBag)
         
         

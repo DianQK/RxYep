@@ -40,7 +40,7 @@ class FeedConversationsViewController: SegueViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = NSLocalizedString("Feeds", comment: "")
+        navigationItem.title = NSLocalizedString("Feeds", comment: "")
 
         realm = try! Realm()
 

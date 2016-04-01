@@ -81,14 +81,7 @@ class DiscoverViewController: BaseViewController {
         return .Check(
             title: sortStyle.name,
             titleColor: UIColor.yepTintColor(),
-            checked: sortStyle == currentSortStyle,
-            action: { [weak self] in
-                guard let strongSelf = self else { return }
-                strongSelf.discoveredUserSortStyle = sortStyle
-                strongSelf.filterView.items = strongSelf.filterItemsWithCurrentSortStyle(strongSelf.discoveredUserSortStyle)
-                strongSelf.filterView.refreshItems()
-            }
-        )
+            checked: sortStyle == currentSortStyle)
     }
 
     private func filterItemsWithCurrentSortStyle(currentSortStyle: DiscoveredUserSortStyle) -> [RxActionSheetView.Item] {
@@ -123,7 +116,7 @@ class DiscoverViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = NSLocalizedString("Discover", comment: "")
+        navigationItem.title = NSLocalizedString("Discover", comment: "")
 
         view.backgroundColor = UIColor.whiteColor()
 
@@ -157,7 +150,6 @@ class DiscoverViewController: BaseViewController {
             }
         }
 
-
         refreshControl.tintColor = UIColor.lightGrayColor()
 //        refreshControl.addTarget(self, action: #selector(DiscoverViewController.refresh(_:)), forControlEvents: .ValueChanged)
         refreshControl.layer.zPosition = -1 // Make Sure Indicator below the Cells
@@ -170,22 +162,48 @@ class DiscoverViewController: BaseViewController {
         viewModel = DiscoverViewModel(input: (
             refreshTriger: refreshControl.rx_controlEvent(.ValueChanged).asDriver(),
             loadMoreTriger: Driver.empty(),
-            modeChanged: filterButtonItem.rx_tap.asDriver().debug("filterButtonItem.rx_tap")))
+            filterStyleChanged: filterView.rx_itemSelected.asDriver(onErrorJustReturn: (.Cancel, 0)),
+            modeChanged: modeButtonItem.rx_tap.asDriver()
+        ))
         
-        let dataSource = RxCollectionViewSectionedReloadDataSource<DiscoverSectionModel>()
-        dataSource.cellFactory = { [unowned self] (_, cv, ip, i) in
-            let cell = cv.dequeueReusableCellWithReuseIdentifier(self.NormalUserIdentifier, forIndexPath: ip) as! DiscoverNormalUserCell
-            cell.configureWithDiscoveredUser(i.value, collectionView: cv, indexPath: ip)
-            return cell
-        }
-//        discoveredUsersCollectionView.dataSource = nil
-//        discoveredUsersCollectionView.delegate = nil
-//        discoveredUsersCollectionView.rx_setDelegate(self)
-//        
-//        viewModel.discoveredUsers.asObservable().debug("rx_discoveredUsers")
-//            .map { [DiscoverSectionModel(model: "", items: $0)] }
-//            .bindTo(discoveredUsersCollectionView.rx_itemsWithDataSource(dataSource))
-//            .addDisposableTo(rx_disposeBag)
+        viewModel.filterItems.asObservable()
+            .bindTo(filterView.rx_items)
+            .addDisposableTo(rx_disposeBag)
+        
+        discoveredUsersCollectionView.dataSource = nil
+        discoveredUsersCollectionView.delegate = nil
+        discoveredUsersCollectionView.rx_setDelegate(self)
+        
+        /// 切换分类和用户结果改变都应该刷新 collectionView
+        Observable.combineLatest(viewModel.discoveredUsers.asObservable(), viewModel.userMode.asObservable()) { users, mode in
+            return users.map { (user: $0, mode: mode) }
+            }
+            .bindTo(discoveredUsersCollectionView.rx_itemsWithCellFactory) { cv, row, i in
+                let indexPath = NSIndexPath(forRow: row, inSection: 0)
+                switch i.mode {
+                case .Card:
+                    let cell = cv.dequeueReusableCellWithReuseIdentifier(self.CardUserIdentifier, forIndexPath: indexPath) as! DiscoverCardUserCell
+                    cell.configureWithDiscoveredUser(i.user, collectionView: cv, indexPath: indexPath)
+                    return cell
+                case .Normal:
+                    let cell = cv.dequeueReusableCellWithReuseIdentifier(self.NormalUserIdentifier, forIndexPath: indexPath) as! DiscoverNormalUserCell
+                    cell.configureWithDiscoveredUser(i.user, collectionView: cv, indexPath: indexPath)
+                    return cell
+                }
+                
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        viewModel.discoveredUserSortStyle.asDriver()
+            .map { $0.nameWithArrow }
+            .drive(filterButtonItem.rx_title)
+            .addDisposableTo(rx_disposeBag)
+        
+        viewModel.isFetching.asDriver()
+            .driveNext { [unowned self] isFetching in
+                if isFetching { self.refreshControl.endRefreshing() }
+            }
+            .addDisposableTo(rx_disposeBag)
         
     }
 
@@ -385,43 +403,43 @@ extension DiscoverViewController: UICollectionViewDelegate, UICollectionViewData
         }
     }
     
-    func collectionView(collectionView: UICollectionView, willDisplayCell cell: UICollectionViewCell, forItemAtIndexPath indexPath: NSIndexPath) {
-
-        switch indexPath.section {
-
-        case Section.User.rawValue:
-
-            let discoveredUser = discoveredUsers[indexPath.row]
-
-            switch userMode {
-
-            case .Normal:
-                let cell = cell as! DiscoverNormalUserCell
-                cell.configureWithDiscoveredUser(discoveredUser, collectionView: collectionView, indexPath: indexPath)
-                
-            case .Card:
-                let cell = cell as! DiscoverCardUserCell
-                cell.configureWithDiscoveredUser(discoveredUser, collectionView: collectionView, indexPath: indexPath)
-            }
-
-        case Section.LoadMore.rawValue:
-            if let cell = cell as? LoadMoreCollectionViewCell {
-
-                println("load more discovered users")
-
-                if !cell.loadingActivityIndicator.isAnimating() {
-                    cell.loadingActivityIndicator.startAnimating()
-                }
-
-                updateDiscoverUsers(mode: .LoadMore, finish: { [weak cell] in
-                    cell?.loadingActivityIndicator.stopAnimating()
-                })
-            }
-
-        default:
-            break
-        }
-    }
+//    func collectionView(collectionView: UICollectionView, willDisplayCell cell: UICollectionViewCell, forItemAtIndexPath indexPath: NSIndexPath) {
+//
+//        switch indexPath.section {
+//
+//        case Section.User.rawValue:
+//
+//            let discoveredUser = discoveredUsers[indexPath.row]
+//
+//            switch userMode {
+//
+//            case .Normal:
+//                let cell = cell as! DiscoverNormalUserCell
+//                cell.configureWithDiscoveredUser(discoveredUser, collectionView: collectionView, indexPath: indexPath)
+//                
+//            case .Card:
+//                let cell = cell as! DiscoverCardUserCell
+//                cell.configureWithDiscoveredUser(discoveredUser, collectionView: collectionView, indexPath: indexPath)
+//            }
+//
+//        case Section.LoadMore.rawValue:
+//            if let cell = cell as? LoadMoreCollectionViewCell {
+//
+//                println("load more discovered users")
+//
+//                if !cell.loadingActivityIndicator.isAnimating() {
+//                    cell.loadingActivityIndicator.startAnimating()
+//                }
+//
+//                updateDiscoverUsers(mode: .LoadMore, finish: { [weak cell] in
+//                    cell?.loadingActivityIndicator.stopAnimating()
+//                })
+//            }
+//
+//        default:
+//            break
+//        }
+//    }
 
     func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
 

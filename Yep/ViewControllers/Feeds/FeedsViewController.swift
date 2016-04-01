@@ -318,7 +318,7 @@ class FeedsViewController: BaseViewController {
             }
         }
 
-        title = NSLocalizedString("Feeds", comment: "")
+        navigationItem.title = NSLocalizedString("Feeds", comment: "")
 
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(FeedsViewController.didRecieveMenuWillShowNotification(_:)), name: UIMenuControllerWillShowMenuNotification, object: nil)
 

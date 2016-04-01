@@ -75,23 +75,22 @@ class YepTabBarController: UITabBarController {
         view.backgroundColor = UIColor.whiteColor()
 
         // 将 UITabBarItem 的 image 下移一些，也不显示 title 了
-        /*
-        if let items = tabBar.items as? [UITabBarItem] {
+        
+        if let items = tabBar.items {
             for item in items {
                 item.imageInsets = UIEdgeInsetsMake(6, 0, -6, 0)
                 item.title = nil
             }
         }
-        */
-
+        
         // Set Titles
 
-        if let items = tabBar.items {
-            for i in 0..<items.count {
-                let item = items[i]
-                item.title = Tab(rawValue: i)?.title
-            }
-        }
+//        if let items = tabBar.items {
+//            for i in 0..<items.count {
+//                let item = items[i]
+//                item.title = Tab(rawValue: i)?.title
+//            }
+//        }
 
         // 处理启动切换
 
