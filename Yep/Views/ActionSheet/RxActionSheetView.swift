@@ -197,16 +197,16 @@ class RxActionSheetView: UIView {
         return CGFloat(rx_items.value.count) * rowHeight
     }
     
-    init(items: [Item]) {
-        
-        super.init(frame: CGRect.zero)
-        
-        self.rx_items.value = items
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+//    init() {
+//        
+//        super.init(frame: CGRect.zero)
+//        
+////        self.rx_items.value = items
+//    }
+//    
+//    required init?(coder aDecoder: NSCoder) {
+//        fatalError("init(coder:) has not been implemented")
+//    }
     
     private lazy var containerView: UIView = {
         let view = UIView()

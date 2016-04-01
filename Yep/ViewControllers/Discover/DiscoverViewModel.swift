@@ -11,6 +11,7 @@ import RxSwift
 import RxCocoa
 import RealmSwift
 import RxDataSources
+import RealmSwift
 
 enum DiscoverUserMode: Int {
     case Normal = 0
@@ -32,22 +33,36 @@ class DiscoverViewModel {
     let filterStyles: Variable<[DiscoveredUserSortStyle]> = Variable([.Distance, .LastSignIn, .Default])
     /// 过滤状态
     let filterItems: Variable<[RxActionSheetView.Item]> = Variable([])
-    /// 加载状态
+    /// 加载状态（还没有数据的）
     let isFetching = Variable(false)
+    /// 刷新状态（下拉）
+    let isRefreshing = Variable(false)
+    /// 加载更多状态
+    let isLoading = Variable(false)
     /// 每次加载 User 数
     private let perPage = 21
     
     private let disposeBag = DisposeBag()
     
     init(input: (refreshTriger: Driver<Void>, loadMoreTriger: Driver<Void>, filterStyleChanged: Driver<(RxActionSheetView.Item, Int)>, modeChanged: Driver<Void>)) {
+        /// 尝试恢复保存的排序姿势
+        if let value = YepUserDefaults.discoveredUserSortStyle.value,
+            _discoveredUserSortStyle = DiscoveredUserSortStyle(rawValue: value) {
+            discoveredUserSortStyle.value = _discoveredUserSortStyle
+        }
+        
+        if let realm = try? Realm(), offlineJSON = OfflineJSON.withName(.DiscoveredUsers, inRealm: realm) {
+            if let JSON = offlineJSON.JSON, discoveredUsers = parseDiscoveredUsers(JSON) {
+                self.discoveredUsers.value = discoveredUsers
+                self.isFetching.value = false
+            }
+        }
         /// 刷新请求
         let refreshRequest = input.refreshTriger.asDriver()
             .withLatestFrom(discoveredUserSortStyle.asDriver())
         
         /// 刷新结果
-       let refreshResult = [refreshRequest.flatMapLatest { rx_discoverUsers(masterSkillIDs: [], learningSkillIDs: [], discoveredUserSortStyle: $0, inPage: 1, withPerPage: self.perPage) },
-                            discoveredUserSortStyle.asDriver().flatMapLatest { rx_discoverUsers(masterSkillIDs: [], learningSkillIDs: [], discoveredUserSortStyle: $0, inPage: 1, withPerPage: self.perPage) }]
-        .toObservable().merge()
+       let refreshResult = refreshRequest.flatMapLatest { rx_discoverUsers(masterSkillIDs: [], learningSkillIDs: [], discoveredUserSortStyle: $0, inPage: 1, withPerPage: self.perPage) }
         
         /// 切换显示方式
         input.modeChanged
@@ -59,6 +74,9 @@ class DiscoverViewModel {
             }
             .addDisposableTo(disposeBag)
         
+        /// 切换显示方式后的结果
+        let filterStyleChangedResult = discoveredUserSortStyle.asDriver().flatMapLatest { rx_discoverUsers(masterSkillIDs: [], learningSkillIDs: [], discoveredUserSortStyle: $0, inPage: 1, withPerPage: self.perPage) }
+        
         /// 切换过滤条件要清除数据
         input.filterStyleChanged
             .driveNext { [unowned self] _ in
@@ -67,7 +85,7 @@ class DiscoverViewModel {
             .addDisposableTo(disposeBag)
         
         // 处理数据，当前 Index 和 Users
-        refreshResult.subscribeNext { [unowned self] result in
+        [refreshResult, filterStyleChangedResult].toObservable().merge().subscribeNext { [unowned self] result in
             switch result {
             case .Success(let data):
                 self.discoveredUsers.value = data
@@ -99,8 +117,15 @@ class DiscoverViewModel {
             }
         }.addDisposableTo(disposeBag)
         
-        // 请求状态的处理，绑定到 isFetching
-        [refreshRequest.asObservable().map { _ in true}, refreshResult.map { _ in false }]
+        // 刷新状态的处理，绑定到 isFetching
+        [refreshRequest.map { _ in true }, refreshResult.map { _ in false }]
+            .toObservable()
+            .merge()
+            .bindTo(isRefreshing)
+            .addDisposableTo(disposeBag)
+        
+        // fetch 状态的处理，绑定到 isFetching
+        [input.filterStyleChanged.map { _ in true }, filterStyleChangedResult.map { _ in false }]
             .toObservable()
             .merge()
             .bindTo(isFetching)

@@ -145,7 +145,7 @@
                                 </collectionViewFlowLayout>
                                 <cells/>
                             </collectionView>
-                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="zzD-ES-eHf">
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="zzD-ES-eHf">
                                 <rect key="frame" x="290" y="184" width="20" height="20"/>
                             </activityIndicatorView>
                         </subviews>
@@ -160,16 +160,8 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Discover" id="di2-g9-owW">
-                        <barButtonItem key="leftBarButtonItem" image="icon_list" id="Q6P-X5-laI">
-                            <connections>
-                                <action selector="changeMode:" destination="5NR-G1-qqW" id="rkV-4T-Tpw"/>
-                            </connections>
-                        </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title=" " id="mve-O6-ube">
-                            <connections>
-                                <action selector="showFilters:" destination="5NR-G1-qqW" id="IQs-8r-M7C"/>
-                            </connections>
-                        </barButtonItem>
+                        <barButtonItem key="leftBarButtonItem" image="icon_list" id="Q6P-X5-laI"/>
+                        <barButtonItem key="rightBarButtonItem" title=" " id="mve-O6-ube"/>
                     </navigationItem>
                     <connections>
                         <outlet property="activityIndicator" destination="zzD-ES-eHf" id="ysT-DA-Krf"/>
