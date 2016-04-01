@@ -50,11 +50,9 @@ private class RxActionSheetDefaultCell: UITableViewCell {
         
         contentView.addSubview(colorTitleLabel)
         colorTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        colorTitleLabel.centerXAnchor.constraintEqualToAnchor(contentView.centerXAnchor).active = true
+        colorTitleLabel.centerYAnchor.constraintEqualToAnchor(contentView.centerYAnchor).active = true
         
-        let centerY = NSLayoutConstraint(item: colorTitleLabel, attribute: .CenterY, relatedBy: .Equal, toItem: contentView, attribute: .CenterY, multiplier: 1, constant: 0)
-        let centerX = NSLayoutConstraint(item: colorTitleLabel, attribute: .CenterX, relatedBy: .Equal, toItem: contentView, attribute: .CenterX, multiplier: 1, constant: 0)
-        
-        NSLayoutConstraint.activateConstraints([centerY, centerX])
     }
 }
 
@@ -122,11 +120,8 @@ private class RxActionSheetSwitchCell: UITableViewCell {
     func makeUI() {
         contentView.addSubview(checkedSwitch)
         checkedSwitch.translatesAutoresizingMaskIntoConstraints = false
-        
-        let centerY = NSLayoutConstraint(item: checkedSwitch, attribute: .CenterY, relatedBy: .Equal, toItem: contentView, attribute: .CenterY, multiplier: 1, constant: 0)
-        let trailing = NSLayoutConstraint(item: checkedSwitch, attribute: .Trailing, relatedBy: .Equal, toItem: contentView, attribute: .Trailing, multiplier: 1, constant: -20)
-        
-        NSLayoutConstraint.activateConstraints([centerY, trailing])
+        checkedSwitch.centerYAnchor.constraintEqualToAnchor(contentView.centerYAnchor).active = true
+        checkedSwitch.trailingAnchor.constraintEqualToAnchor(contentView.trailingAnchor, constant: -20).active = true
     }
 }
 
@@ -171,16 +166,12 @@ private class RxActionSheetCheckCell: UITableViewCell {
         colorTitleLabel.translatesAutoresizingMaskIntoConstraints = false
         checkImageView.translatesAutoresizingMaskIntoConstraints = false
         
-        let centerY = NSLayoutConstraint(item: colorTitleLabel, attribute: .CenterY, relatedBy: .Equal, toItem: contentView, attribute: .CenterY, multiplier: 1, constant: 0)
-        let centerX = NSLayoutConstraint(item: colorTitleLabel, attribute: .CenterX, relatedBy: .Equal, toItem: contentView, attribute: .CenterX, multiplier: 1, constant: 0)
+        colorTitleLabel.centerXAnchor.constraintEqualToAnchor(contentView.centerXAnchor).active = true
+        colorTitleLabel.centerYAnchor.constraintEqualToAnchor(contentView.centerYAnchor).active = true
         
-        NSLayoutConstraint.activateConstraints([centerY, centerX])
+        checkImageView.centerYAnchor.constraintEqualToAnchor(contentView.centerYAnchor).active = true
+        checkImageView.trailingAnchor.constraintEqualToAnchor(contentView.trailingAnchor, constant: -20).active = true
         
-        
-        let checkImageViewCenterY = NSLayoutConstraint(item: checkImageView, attribute: .CenterY, relatedBy: .Equal, toItem: contentView, attribute: .CenterY, multiplier: 1, constant: 0)
-        let checkImageViewTrailing = NSLayoutConstraint(item: checkImageView, attribute: .Trailing, relatedBy: .Equal, toItem: contentView, attribute: .Trailing, multiplier: 1, constant: -20)
-        
-        NSLayoutConstraint.activateConstraints([checkImageViewCenterY, checkImageViewTrailing])
     }
 }
 
@@ -369,49 +360,34 @@ class RxActionSheetView: UIView {
         
         UIView.animateWithDuration(0.2, delay: 0.0, options: .CurveEaseIn, animations: { _ in
             self.containerView.backgroundColor = UIColor.blackColor().colorWithAlphaComponent(0.3)
-            
-            }, completion: { _ in
-        })
+            }, completion: nil)
         
         UIView.animateWithDuration(0.2, delay: 0.1, options: .CurveEaseOut, animations: { _ in
             self.tableViewBottomConstraint?.constant = 0
-            
             self.layoutIfNeeded()
-            
-            }, completion: { _ in
-        })
+            }, completion: nil)
     }
     
     func hide() {
         
         UIView.animateWithDuration(0.2, delay: 0.0, options: .CurveEaseIn, animations: { _ in
             self.tableViewBottomConstraint?.constant = self.totalHeight
-            
             self.layoutIfNeeded()
-            
-            }, completion: { _ in
-        })
+            }, completion: nil)
         
         UIView.animateWithDuration(0.2, delay: 0.1, options: .CurveEaseOut, animations: { _ in
             self.containerView.backgroundColor = UIColor.clearColor()
-            
-            }, completion: { _ in
-                self.removeFromSuperview()
-        })
+            }) { _ in self.removeFromSuperview() }
     }
     
     func hideAndDo(afterHideAction: (() -> Void)?) {
         
         UIView.animateWithDuration(0.2, delay: 0.0, options: .CurveLinear, animations: { _ in
             self.containerView.alpha = 0
-            
             self.tableViewBottomConstraint?.constant = self.totalHeight
-            
             self.layoutIfNeeded()
             
-            }, completion: { finished in
-                self.removeFromSuperview()
-        })
+            }) { _ in self.removeFromSuperview() }
         
         delay(0.1) {
             afterHideAction?()
