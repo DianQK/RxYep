@@ -16,9 +16,12 @@ import RealmSwift
 enum DiscoverUserMode: Int {
     case Normal = 0
     case Card
+    case LoadMore
 }
 
 var skillSizeCache = [String: CGRect]()
+
+typealias DiscoverSection = AnimatableSectionModel<DiscoverUserMode, OptionalHashBox<DiscoveredUser>>
 
 class DiscoverViewModel {
     /// 当前用户选择的浏览模式
@@ -38,14 +41,17 @@ class DiscoverViewModel {
     /// 刷新状态（下拉）
     let isRefreshing = Variable(false)
     /// 加载更多状态
-    let isLoading = Variable(false)
+//    let isLoading = Variable(false)
+    /// 一个可以随时调用加载下一页的 Trigger
+    let loadNextPageTrigger = PublishSubject<Void>()
     /// 每次加载 User 数
     private let perPage = 21
     
     private let disposeBag = DisposeBag()
     
-    init(input: (refreshTriger: Driver<Void>, loadMoreTriger: Driver<Void>, filterStyleChanged: Driver<(RxActionSheetView.Item, Int)>, modeChanged: Driver<Void>)) {
+    init(input: (refreshTrigger: Driver<Void>, loadMoreTrigger: Driver<Void>, filterStyleChanged: Driver<(RxActionSheetView.Item, Int)>, modeChanged: Driver<Void>)) {
         /// 尝试恢复保存的排序姿势
+        
         if let value = YepUserDefaults.discoveredUserSortStyle.value,
             _discoveredUserSortStyle = DiscoveredUserSortStyle(rawValue: value) {
             discoveredUserSortStyle.value = _discoveredUserSortStyle
@@ -58,11 +64,26 @@ class DiscoverViewModel {
             }
         }
         /// 刷新请求
-        let refreshRequest = input.refreshTriger.asDriver()
+        let refreshRequest = input.refreshTrigger.asDriver()
             .withLatestFrom(discoveredUserSortStyle.asDriver())
         
         /// 刷新结果
        let refreshResult = refreshRequest.flatMapLatest { rx_discoverUsers(masterSkillIDs: [], learningSkillIDs: [], discoveredUserSortStyle: $0, inPage: 1, withPerPage: self.perPage) }
+        
+        input.loadMoreTrigger
+            .withLatestFrom(currentPageIndex.asDriver())
+            .withLatestFrom(discoveredUserSortStyle.asDriver()) { $0 }
+            .flatMapLatest { rx_discoverUsers(masterSkillIDs: [], learningSkillIDs: [], discoveredUserSortStyle: $1, inPage: $0 + 1, withPerPage: self.perPage) }
+            .driveNext { [unowned self] in
+                switch $0 {
+                case .Success(let users):
+                    self.currentPageIndex.value += 1
+                    self.discoveredUsers.value += users
+                case .Failure(let error):
+                    println(error)
+                }
+            }
+            .addDisposableTo(disposeBag)
         
         /// 切换显示方式
         input.modeChanged
@@ -70,6 +91,7 @@ class DiscoverViewModel {
                 switch self.userMode.value {
                 case .Card: self.userMode.value = .Normal
                 case .Normal: self.userMode.value = .Card
+                default: break
                 }
             }
             .addDisposableTo(disposeBag)
@@ -85,15 +107,18 @@ class DiscoverViewModel {
             .addDisposableTo(disposeBag)
         
         // 处理数据，当前 Index 和 Users
-        [refreshResult, filterStyleChangedResult].toObservable().merge().subscribeNext { [unowned self] result in
-            switch result {
-            case .Success(let data):
-                self.discoveredUsers.value = data
-                self.currentPageIndex.value = 1
-            case .Failure(let error):
-                defaultFailureHandler(reason: error.reason, errorMessage: error.errorMessage)
+        [refreshResult, filterStyleChangedResult]
+            .toObservable().merge()
+            .subscribeNext { [unowned self] result in
+                switch result {
+                case .Success(let data):
+                    self.discoveredUsers.value = data
+                    self.currentPageIndex.value = 1
+                case .Failure(let error):
+                    defaultFailureHandler(reason: error.reason, errorMessage: error.errorMessage)
+                }
             }
-        }.addDisposableTo(disposeBag)
+            .addDisposableTo(disposeBag)
         
         // 缓存高度
         refreshResult.asObservable()
@@ -129,6 +154,11 @@ class DiscoverViewModel {
             .toObservable()
             .merge()
             .bindTo(isFetching)
+            .addDisposableTo(disposeBag)
+        
+        discoveredUserSortStyle.asDriver()
+            .distinctUntilChanged()
+            .driveNext { YepUserDefaults.discoveredUserSortStyle.value = $0.rawValue }
             .addDisposableTo(disposeBag)
         
         /// 将排序状态绑定到 filterItems
