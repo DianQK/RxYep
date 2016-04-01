@@ -1,79 +1,84 @@
 //
-//  ActionSheetView.swift
+//  RxActionSheetView.swift
 //  Yep
 //
-//  Created by NIX on 16/3/2.
+//  Created by 宋宋 on 16/4/1.
 //  Copyright © 2016年 Catch Inc. All rights reserved.
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
+import RxDataSources
+import NSObject_Rx
+import RxOptional
 
 // MARK: - ActionSheetDefaultCell
 
-private class ActionSheetDefaultCell: UITableViewCell {
-
+private class RxActionSheetDefaultCell: UITableViewCell {
+    
     class var reuseIdentifier: String {
         return "\(self)"
     }
-
+    
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-
+        
         layoutMargins = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
-
+        
         makeUI()
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     lazy var colorTitleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFontOfSize(18, weight: UIFontWeightLight)
         label.font = UIFont(name: "HelveticaNeue-Light", size: 18)!
         return label
     }()
-
+    
     var colorTitleLabelTextColor: UIColor = UIColor.yepTintColor() {
         willSet {
             colorTitleLabel.textColor = newValue
         }
     }
-
+    
     func makeUI() {
-
+        
         contentView.addSubview(colorTitleLabel)
         colorTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let centerY = NSLayoutConstraint(item: colorTitleLabel, attribute: .CenterY, relatedBy: .Equal, toItem: contentView, attribute: .CenterY, multiplier: 1, constant: 0)
         let centerX = NSLayoutConstraint(item: colorTitleLabel, attribute: .CenterX, relatedBy: .Equal, toItem: contentView, attribute: .CenterX, multiplier: 1, constant: 0)
-
+        
         NSLayoutConstraint.activateConstraints([centerY, centerX])
     }
 }
 
 // MARK: - ActionSheetDetailCell
 
-private class ActionSheetDetailCell: UITableViewCell {
-
+private class RxActionSheetDetailCell: UITableViewCell {
+    
     class var reuseIdentifier: String {
         return "\(self)"
     }
-
+    
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-
+        
         accessoryType = .DisclosureIndicator
-
+        
         layoutMargins = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
-
+        
         textLabel?.textColor = UIColor.darkGrayColor()
-
+        
         textLabel?.font = UIFont.systemFontOfSize(18, weight: UIFontWeightLight)
-
+        
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -81,113 +86,108 @@ private class ActionSheetDetailCell: UITableViewCell {
 
 // MARK: - ActionSheetSwitchCell
 
-private class ActionSheetSwitchCell: UITableViewCell {
-
+private class RxActionSheetSwitchCell: UITableViewCell {
+    
     class var reuseIdentifier: String {
         return "\(self)"
     }
-
+    
     var action: (Bool -> Void)?
-
+    
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-
+        
         layoutMargins = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
-
+        
         textLabel?.textColor = UIColor.darkGrayColor()
-
-//        if #available(iOS 8.2, *) {
-            textLabel?.font = UIFont.systemFontOfSize(18, weight: UIFontWeightLight)
-//        } else {
-//            textLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 18)!
-//        }
-
+        textLabel?.font = UIFont.systemFontOfSize(18, weight: UIFontWeightLight)
+        
         makeUI()
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     lazy var checkedSwitch: UISwitch = {
         let s = UISwitch()
-        s.addTarget(self, action: #selector(ActionSheetSwitchCell.toggleSwitch(_:)), forControlEvents: .ValueChanged)
+        s.addTarget(self, action: #selector(RxActionSheetSwitchCell.toggleSwitch(_:)), forControlEvents: .ValueChanged)
         return s
     }()
-
+    
     @objc private func toggleSwitch(sender: UISwitch) {
         action?(sender.on)
     }
-
+    
     func makeUI() {
         contentView.addSubview(checkedSwitch)
         checkedSwitch.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let centerY = NSLayoutConstraint(item: checkedSwitch, attribute: .CenterY, relatedBy: .Equal, toItem: contentView, attribute: .CenterY, multiplier: 1, constant: 0)
         let trailing = NSLayoutConstraint(item: checkedSwitch, attribute: .Trailing, relatedBy: .Equal, toItem: contentView, attribute: .Trailing, multiplier: 1, constant: -20)
-
+        
         NSLayoutConstraint.activateConstraints([centerY, trailing])
     }
 }
 
-private class ActionSheetCheckCell: UITableViewCell {
-
+private class RxActionSheetCheckCell: UITableViewCell {
+    
     class var reuseIdentifier: String {
         return "\(self)"
     }
-
+    
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-
+        
         makeUI()
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     lazy var colorTitleLabel: UILabel = {
         let label = UILabel()
-            label.font = UIFont.systemFontOfSize(18, weight: UIFontWeightLight)
-            label.font = UIFont(name: "HelveticaNeue-Light", size: 18)!
+        label.font = UIFont.systemFontOfSize(18, weight: UIFontWeightLight)
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)!
         return label
     }()
-
+    
     lazy var checkImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "icon_location_checkmark"))
         return imageView
     }()
-
+    
     var colorTitleLabelTextColor: UIColor = UIColor.yepTintColor() {
         willSet {
             colorTitleLabel.textColor = newValue
         }
     }
-
+    
     func makeUI() {
-
+        
         contentView.addSubview(colorTitleLabel)
         contentView.addSubview(checkImageView)
         colorTitleLabel.translatesAutoresizingMaskIntoConstraints = false
         checkImageView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let centerY = NSLayoutConstraint(item: colorTitleLabel, attribute: .CenterY, relatedBy: .Equal, toItem: contentView, attribute: .CenterY, multiplier: 1, constant: 0)
         let centerX = NSLayoutConstraint(item: colorTitleLabel, attribute: .CenterX, relatedBy: .Equal, toItem: contentView, attribute: .CenterX, multiplier: 1, constant: 0)
-
+        
         NSLayoutConstraint.activateConstraints([centerY, centerX])
-
-
+        
+        
         let checkImageViewCenterY = NSLayoutConstraint(item: checkImageView, attribute: .CenterY, relatedBy: .Equal, toItem: contentView, attribute: .CenterY, multiplier: 1, constant: 0)
         let checkImageViewTrailing = NSLayoutConstraint(item: checkImageView, attribute: .Trailing, relatedBy: .Equal, toItem: contentView, attribute: .Trailing, multiplier: 1, constant: -20)
-
+        
         NSLayoutConstraint.activateConstraints([checkImageViewCenterY, checkImageViewTrailing])
     }
 }
 
 // MARK: - ActionSheetView
 
-class ActionSheetView: UIView {
-
+class RxActionSheetView: UIView {
+    
     enum Item {
         case Default(title: String, titleColor: UIColor, action: () -> Bool)
         case Detail(title: String, titleColor: UIColor, action: () -> Void)
@@ -195,156 +195,218 @@ class ActionSheetView: UIView {
         case Check(title: String, titleColor: UIColor, checked: Bool, action: () -> Void)
         case Cancel
     }
-
+    
     var items: [Item]
-
+    
+    let rx_items = Variable<[Item]>([])
+    
     private let rowHeight: CGFloat = 60
-
+    
     private var totalHeight: CGFloat {
         return CGFloat(items.count) * rowHeight
     }
-
+    
     init(items: [Item]) {
         self.items = items
-
+        
         super.init(frame: CGRect.zero)
+        
+        self.rx_items.value = items
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     private lazy var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor.clearColor()
         return view
     }()
-
+    
     private lazy var tableView: UITableView = {
         let view = UITableView()
-        view.dataSource = self
-        view.delegate = self
         view.rowHeight = self.rowHeight
         view.scrollEnabled = false
-
-        view.registerClass(ActionSheetDefaultCell.self, forCellReuseIdentifier: ActionSheetDefaultCell.reuseIdentifier)
-        view.registerClass(ActionSheetDetailCell.self, forCellReuseIdentifier: ActionSheetDetailCell.reuseIdentifier)
-        view.registerClass(ActionSheetSwitchCell.self, forCellReuseIdentifier: ActionSheetSwitchCell.reuseIdentifier)
-        view.registerClass(ActionSheetCheckCell.self, forCellReuseIdentifier: ActionSheetCheckCell.reuseIdentifier)
-
+        
+        view.registerClass(RxActionSheetDefaultCell.self, forCellReuseIdentifier: RxActionSheetDefaultCell.reuseIdentifier)
+        view.registerClass(RxActionSheetDetailCell.self, forCellReuseIdentifier: RxActionSheetDetailCell.reuseIdentifier)
+        view.registerClass(RxActionSheetSwitchCell.self, forCellReuseIdentifier: RxActionSheetSwitchCell.reuseIdentifier)
+        view.registerClass(RxActionSheetCheckCell.self, forCellReuseIdentifier: RxActionSheetCheckCell.reuseIdentifier)
+        
         return view
     }()
-
+    
     private var isFirstTimeBeenAddedAsSubview = true
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
-
+        
         if isFirstTimeBeenAddedAsSubview {
             isFirstTimeBeenAddedAsSubview = false
-
+            
             makeUI()
-
-            let tap = UITapGestureRecognizer(target: self, action: #selector(ActionSheetView.hide))
+            
+            let tap = UITapGestureRecognizer(target: self, action: #selector(RxActionSheetView.hide))
             containerView.addGestureRecognizer(tap)
-
+            
             tap.cancelsTouchesInView = true
             tap.delegate = self
+            
         }
     }
-
+    
     func refreshItems() {
         dispatch_async(dispatch_get_main_queue()) { [weak self] in
             self?.tableView.reloadData()
         }
     }
-
+    
     private var tableViewBottomConstraint: NSLayoutConstraint?
-
+    
     private func makeUI() {
-
+        
         addSubview(containerView)
         containerView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         containerView.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let viewsDictionary = [
             "containerView": containerView,
             "tableView": tableView,
-        ]
-
+            ]
+        
         // layout for containerView
-
-        let containerViewConstraintsH = NSLayoutConstraint.constraintsWithVisualFormat("H:|[containerView]|", options: [], metrics: nil, views: viewsDictionary)
-        let containerViewConstraintsV = NSLayoutConstraint.constraintsWithVisualFormat("V:|[containerView]|", options: [], metrics: nil, views: viewsDictionary)
-
-        NSLayoutConstraint.activateConstraints(containerViewConstraintsH)
-        NSLayoutConstraint.activateConstraints(containerViewConstraintsV)
-
+        
+        containerView.topAnchor.constraintEqualToAnchor(topAnchor).active = true
+        containerView.trailingAnchor.constraintEqualToAnchor(trailingAnchor).active = true
+        containerView.leadingAnchor.constraintEqualToAnchor(leadingAnchor).active = true
+        containerView.bottomAnchor.constraintEqualToAnchor(bottomAnchor).active = true
+        
         // layout for tableView
-
-        let tableViewConstraintsH = NSLayoutConstraint.constraintsWithVisualFormat("H:|[tableView]|", options: [], metrics: nil, views: viewsDictionary)
-
-        let tableViewBottomConstraint = NSLayoutConstraint(item: tableView, attribute: .Bottom, relatedBy: .Equal, toItem: containerView, attribute: .Bottom, multiplier: 1.0, constant: self.totalHeight)
-
+        
+        tableView.trailingAnchor.constraintEqualToAnchor(containerView.trailingAnchor).active = true
+        tableView.leadingAnchor.constraintEqualToAnchor(containerView.leadingAnchor).active = true
+        tableView.heightAnchor.constraintEqualToConstant(totalHeight).active = true
+        let tableViewBottomConstraint = tableView.bottomAnchor.constraintEqualToAnchor(containerView.bottomAnchor)
+        tableViewBottomConstraint.active = true
         self.tableViewBottomConstraint = tableViewBottomConstraint
+        
+        // TODO: - 先写在这里，== View 也要改才方便传递 ==
+        
+        rx_items.asObservable()
+            .bindTo(tableView.rx_itemsWithCellFactory) { (tableView, index, item) in
+                switch item {
+                case let .Default(title, titleColor, _):
+                    let cell = tableView.dequeueReusableCellWithIdentifier(RxActionSheetDefaultCell.reuseIdentifier) as! RxActionSheetDefaultCell
+                    cell.colorTitleLabel.text = title
+                    cell.colorTitleLabelTextColor = titleColor
+                    return cell
+                    
+                case let .Detail(title, titleColor, _):
+                    let cell = tableView.dequeueReusableCellWithIdentifier(RxActionSheetDetailCell.reuseIdentifier) as! RxActionSheetDetailCell
+                    cell.textLabel?.text = title
+                    cell.textLabel?.textColor = titleColor
+                    return cell
+                case let .Switch(title, titleColor, switchOn, action):
+                    let cell = tableView.dequeueReusableCellWithIdentifier(RxActionSheetSwitchCell.reuseIdentifier) as! RxActionSheetSwitchCell
+                    cell.textLabel?.text = title
+                    cell.textLabel?.textColor = titleColor
+                    cell.checkedSwitch.on = switchOn
+                    cell.action = action
+                    return cell
+                    
+                case let .Check(title, titleColor, checked, _):
+                    let cell = tableView.dequeueReusableCellWithIdentifier(RxActionSheetCheckCell.reuseIdentifier) as! RxActionSheetCheckCell
+                    cell.colorTitleLabel.text = title
+                    cell.colorTitleLabelTextColor = titleColor
+                    cell.checkImageView.hidden = !checked
+                    return cell
+                    
+                case .Cancel:
+                    let cell = tableView.dequeueReusableCellWithIdentifier(RxActionSheetDefaultCell.reuseIdentifier) as! RxActionSheetDefaultCell
+                    cell.colorTitleLabel.text = NSLocalizedString("Cancel", comment: "")
+                    cell.colorTitleLabelTextColor = UIColor.yepTintColor()
+                    return cell
+                }
+        }.addDisposableTo(rx_disposeBag)
+        
+        tableView.rx_modelItemSelected(Item).subscribeNext { [unowned self] item, ip in
+            defer {
+                self.tableView.deselectRowAtIndexPath(ip, animated: true)
+            }
+            
+            switch item {
+                
+            case .Default(_, _, let action): if action() { self.hide() }
 
-        let tableViewHeightConstraint = NSLayoutConstraint(item: tableView, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1.0, constant: self.totalHeight)
-
-        NSLayoutConstraint.activateConstraints(tableViewConstraintsH)
-        NSLayoutConstraint.activateConstraints([tableViewBottomConstraint, tableViewHeightConstraint])
+            case .Detail(_, _, let action): self.hideAndDo { action() }
+                
+            case .Switch: break
+                
+            case .Check(_, _, _, let action):
+                action()
+                self.hide()
+                
+            case .Cancel:
+                self.hide()
+                break
+            }
+        }.addDisposableTo(rx_disposeBag)
+        
+        
     }
-
+    
     func showInView(view: UIView) {
-
+        
         frame = view.bounds
-
+        
         view.addSubview(self)
-
+        
         layoutIfNeeded()
-
+        
         containerView.alpha = 1
-
+        
         UIView.animateWithDuration(0.2, delay: 0.0, options: .CurveEaseIn, animations: { _ in
             self.containerView.backgroundColor = UIColor.blackColor().colorWithAlphaComponent(0.3)
-
+            
             }, completion: { _ in
         })
-
+        
         UIView.animateWithDuration(0.2, delay: 0.1, options: .CurveEaseOut, animations: { _ in
             self.tableViewBottomConstraint?.constant = 0
-
+            
             self.layoutIfNeeded()
-
+            
             }, completion: { _ in
         })
     }
-
+    
     func hide() {
-
+        
         UIView.animateWithDuration(0.2, delay: 0.0, options: .CurveEaseIn, animations: { _ in
             self.tableViewBottomConstraint?.constant = self.totalHeight
-
+            
             self.layoutIfNeeded()
-
+            
             }, completion: { _ in
         })
-
+        
         UIView.animateWithDuration(0.2, delay: 0.1, options: .CurveEaseOut, animations: { _ in
             self.containerView.backgroundColor = UIColor.clearColor()
-
+            
             }, completion: { _ in
                 self.removeFromSuperview()
         })
     }
-
+    
     func hideAndDo(afterHideAction: (() -> Void)?) {
-
+        
         UIView.animateWithDuration(0.2, delay: 0.0, options: .CurveLinear, animations: { _ in
             self.containerView.alpha = 0
-
+            
             self.tableViewBottomConstraint?.constant = self.totalHeight
-
+            
             self.layoutIfNeeded()
             
             }, completion: { finished in
@@ -359,116 +421,14 @@ class ActionSheetView: UIView {
 
 // MARK: - UIGestureRecognizerDelegate
 
-extension ActionSheetView: UIGestureRecognizerDelegate {
-
+extension RxActionSheetView: UIGestureRecognizerDelegate {
+    
     func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
-
+        
         if touch.view != containerView {
             return false
         }
-
+        
         return true
     }
 }
-
-// MARK: - UITableViewDataSource, UITableViewDelegate
-
-extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
-
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1
-    }
-
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return items.count
-    }
-
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let item = items[indexPath.row]
-
-        switch item {
-
-        case let .Default(title, titleColor, _):
-
-            let cell = tableView.dequeueReusableCellWithIdentifier(ActionSheetDefaultCell.reuseIdentifier) as! ActionSheetDefaultCell
-            cell.colorTitleLabel.text = title
-            cell.colorTitleLabelTextColor = titleColor
-
-            return cell
-
-        case let .Detail(title, titleColor, _):
-
-            let cell = tableView.dequeueReusableCellWithIdentifier(ActionSheetDetailCell.reuseIdentifier) as! ActionSheetDetailCell
-            cell.textLabel?.text = title
-            cell.textLabel?.textColor = titleColor
-
-            return cell
-
-        case let .Switch(title, titleColor, switchOn, action):
-
-            let cell = tableView.dequeueReusableCellWithIdentifier(ActionSheetSwitchCell.reuseIdentifier) as! ActionSheetSwitchCell
-            cell.textLabel?.text = title
-            cell.textLabel?.textColor = titleColor
-            cell.checkedSwitch.on = switchOn
-            cell.action = action
-
-            return cell
-
-        case let .Check(title, titleColor, checked, _):
-
-            let cell = tableView.dequeueReusableCellWithIdentifier(ActionSheetCheckCell.reuseIdentifier) as! ActionSheetCheckCell
-            cell.colorTitleLabel.text = title
-            cell.colorTitleLabelTextColor = titleColor
-            cell.checkImageView.hidden = !checked
-
-            return cell
-
-        case .Cancel:
-
-            let cell = tableView.dequeueReusableCellWithIdentifier(ActionSheetDefaultCell.reuseIdentifier) as! ActionSheetDefaultCell
-            cell.colorTitleLabel.text = NSLocalizedString("Cancel", comment: "")
-            cell.colorTitleLabelTextColor = UIColor.yepTintColor()
-
-            return cell
-        }
-    }
-
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-
-        defer {
-            tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        }
-
-        let item = items[indexPath.row]
-
-        switch item {
-
-        case .Default(_, _, let action):
-
-            if action() {
-                hide()
-            }
-
-        case .Detail(_, _, let action):
-
-            hideAndDo {
-                action()
-            }
-
-        case .Switch:
-
-           break
-
-        case .Check(_, _, _, let action):
-
-            action()
-            hide()
-
-        case .Cancel:
-
-            hide()
-            break
-        }
-    }
-}
-

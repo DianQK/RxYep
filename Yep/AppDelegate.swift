@@ -203,10 +203,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             completionHandler()
         }
 
-        guard #available(iOS 9, *) else {
-            return
-        }
-
         guard let identifier = identifier else {
             return
         }

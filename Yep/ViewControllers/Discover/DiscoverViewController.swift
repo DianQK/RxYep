@@ -8,13 +8,12 @@
 
 import UIKit
 import RealmSwift
+import RxSwift
+import RxCocoa
+import RxDataSources
+import RxOptional
+import NSObject_Rx
 
-enum DiscoverUserMode: Int {
-    case Normal = 0
-    case Card
-}
-
-var skillSizeCache = [String: CGRect]()
 
 class DiscoverViewController: BaseViewController {
 
@@ -25,11 +24,13 @@ class DiscoverViewController: BaseViewController {
     @IBOutlet private weak var modeButtonItem: UIBarButtonItem!
 
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
+    
+    var viewModel: DiscoverViewModel!
 
     private let NormalUserIdentifier = "DiscoverNormalUserCell"
     private let CardUserIdentifier = "DiscoverCardUserCell"
     private let loadMoreCollectionViewCellID = "LoadMoreCollectionViewCell"
-    
+    // viewModel
     private var userMode: DiscoverUserMode = .Card {
         didSet {
             switch userMode {
@@ -51,7 +52,7 @@ class DiscoverViewController: BaseViewController {
     private let layout = DiscoverFlowLayout()
     
     private let refreshControl = UIRefreshControl()
-
+    // viewModel
     private var discoveredUserSortStyle: DiscoveredUserSortStyle = .Default {
         didSet {
             discoveredUsers = []
@@ -66,16 +67,17 @@ class DiscoverViewController: BaseViewController {
             YepUserDefaults.discoveredUserSortStyle.value = discoveredUserSortStyle.rawValue
         }
     }
-
+    // viewModel
     private var discoveredUsers = [DiscoveredUser]()
 
+    // viewModel
     private lazy var filterStyles: [DiscoveredUserSortStyle] = [
         .Distance,
         .LastSignIn,
         .Default,
     ]
 
-    private func filterItemWithSortStyle(sortStyle: DiscoveredUserSortStyle, currentSortStyle: DiscoveredUserSortStyle) -> ActionSheetView.Item {
+    private func filterItemWithSortStyle(sortStyle: DiscoveredUserSortStyle, currentSortStyle: DiscoveredUserSortStyle) -> RxActionSheetView.Item {
         return .Check(
             title: sortStyle.name,
             titleColor: UIColor.yepTintColor(),
@@ -89,7 +91,7 @@ class DiscoverViewController: BaseViewController {
         )
     }
 
-    private func filterItemsWithCurrentSortStyle(currentSortStyle: DiscoveredUserSortStyle) -> [ActionSheetView.Item] {
+    private func filterItemsWithCurrentSortStyle(currentSortStyle: DiscoveredUserSortStyle) -> [RxActionSheetView.Item] {
         var items = filterStyles.map({
            filterItemWithSortStyle($0, currentSortStyle: currentSortStyle)
         })
@@ -97,8 +99,8 @@ class DiscoverViewController: BaseViewController {
         return items
     }
 
-    private lazy var filterView: ActionSheetView = {
-        let view = ActionSheetView(items: self.filterItemsWithCurrentSortStyle(self.discoveredUserSortStyle))
+    private lazy var filterView: RxActionSheetView = {
+        let view = RxActionSheetView(items: self.filterItemsWithCurrentSortStyle(self.discoveredUserSortStyle))
         return view
     }()
 
@@ -157,13 +159,34 @@ class DiscoverViewController: BaseViewController {
 
 
         refreshControl.tintColor = UIColor.lightGrayColor()
-        refreshControl.addTarget(self, action: #selector(DiscoverViewController.refresh(_:)), forControlEvents: .ValueChanged)
+//        refreshControl.addTarget(self, action: #selector(DiscoverViewController.refresh(_:)), forControlEvents: .ValueChanged)
         refreshControl.layer.zPosition = -1 // Make Sure Indicator below the Cells
         discoveredUsersCollectionView.addSubview(refreshControl)
 
         #if DEBUG
-            //view.addSubview(discoverFPSLabel)
+            view.addSubview(discoverFPSLabel)
         #endif
+        
+        viewModel = DiscoverViewModel(input: (
+            refreshTriger: refreshControl.rx_controlEvent(.ValueChanged).asDriver(),
+            loadMoreTriger: Driver.empty(),
+            modeChanged: filterButtonItem.rx_tap.asDriver().debug("filterButtonItem.rx_tap")))
+        
+        let dataSource = RxCollectionViewSectionedReloadDataSource<DiscoverSectionModel>()
+        dataSource.cellFactory = { [unowned self] (_, cv, ip, i) in
+            let cell = cv.dequeueReusableCellWithReuseIdentifier(self.NormalUserIdentifier, forIndexPath: ip) as! DiscoverNormalUserCell
+            cell.configureWithDiscoveredUser(i.value, collectionView: cv, indexPath: ip)
+            return cell
+        }
+//        discoveredUsersCollectionView.dataSource = nil
+//        discoveredUsersCollectionView.delegate = nil
+//        discoveredUsersCollectionView.rx_setDelegate(self)
+//        
+//        viewModel.discoveredUsers.asObservable().debug("rx_discoveredUsers")
+//            .map { [DiscoverSectionModel(model: "", items: $0)] }
+//            .bindTo(discoveredUsersCollectionView.rx_itemsWithDataSource(dataSource))
+//            .addDisposableTo(rx_disposeBag)
+        
     }
 
     // MARK: Actions
@@ -195,8 +218,9 @@ class DiscoverViewController: BaseViewController {
             filterView.showInView(window)
         }
     }
-
+    // viewModel
     private var currentPageIndex = 1
+    // viewModel
     private var isFetching = false
     private enum UpdateMode {
         case Static
@@ -265,7 +289,7 @@ class DiscoverViewController: BaseViewController {
                     let oldDiscoveredUsersCount = strongSelf.discoveredUsers.count
                     strongSelf.discoveredUsers += discoveredUsers
                     let newDiscoveredUsersCount = strongSelf.discoveredUsers.count
-
+                    
                     let indexPaths = Array(oldDiscoveredUsersCount..<newDiscoveredUsersCount).map({ NSIndexPath(forItem: $0, inSection: Section.User.rawValue) })
                     if !indexPaths.isEmpty {
                         wayToUpdate = .Insert(indexPaths)

@@ -12,7 +12,7 @@ def pods
     pod 'KeyboardMan'
     pod 'Ruler'
     pod 'Proposer'
-    pod 'APAddressBook/Swift'
+    pod 'APAddressBook/Swift', :inhibit_warnings =>  true
     pod 'FXBlurView'
     pod 'Kingfisher'
     pod 'TPKeyboardAvoiding'

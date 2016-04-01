@@ -1291,6 +1291,41 @@ let parseDiscoveredUsers: JSONDictionary -> [DiscoveredUser]? = { data in
     return nil
 }
 
+func rx_discoverUsers(masterSkillIDs masterSkillIDs: [String], learningSkillIDs: [String], discoveredUserSortStyle: DiscoveredUserSortStyle, inPage page: Int, withPerPage perPage: Int) -> Driver<RxYepResult<[DiscoveredUser]>> {
+    
+    let requestParameters: [String: AnyObject] = [
+        "master_skills": masterSkillIDs,
+        "learning_skills": learningSkillIDs,
+        "sort": discoveredUserSortStyle.rawValue,
+        "page": page,
+        "per_page": perPage,
+        ]
+    
+    //let parse = parseDiscoveredUsers
+    let parse: JSONDictionary -> [DiscoveredUser]? = { data in
+        
+        // 只离线第一页
+        if page == 1 {
+            if let realm = try? Realm() {
+                if let offlineData = try? NSJSONSerialization.dataWithJSONObject(data, options: []) {
+                    
+                    let offlineJSON = OfflineJSON(name: OfflineJSONName.DiscoveredUsers.rawValue, data: offlineData)
+                    
+                    let _ = try? realm.write {
+                        realm.add(offlineJSON, update: true)
+                    }
+                }
+            }
+        }
+        
+        return parseDiscoveredUsers(data)
+    }
+    
+    let resource = authJsonResource(path: "/v1/user/discover", method: .GET, requestParameters: requestParameters as JSONDictionary, parse: parse)
+    
+    return  rx_apiRequest({_ in}, baseURL: yepBaseURL, resource: resource)
+}
+
 func discoverUsers(masterSkillIDs masterSkillIDs: [String], learningSkillIDs: [String], discoveredUserSortStyle: DiscoveredUserSortStyle, inPage page: Int, withPerPage perPage: Int, failureHandler: FailureHandler?, completion: [DiscoveredUser] -> Void) {
     
     let requestParameters: [String: AnyObject] = [

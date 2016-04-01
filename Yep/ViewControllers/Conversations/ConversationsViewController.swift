@@ -285,8 +285,8 @@ class ConversationsViewController: SegueViewController {
     
     private func askForNotification() {
 
-        if #available(iOS 9.0, *) {
-            
+//        if #available(iOS 9.0, *) {
+        
             let replyAction = UIMutableUserNotificationAction()
             replyAction.title = NSLocalizedString("Reply", comment: "")
             replyAction.identifier = YepNotificationCommentAction
@@ -311,14 +311,14 @@ class ConversationsViewController: SegueViewController {
 //                    UIUserNotificationType.Sound.rawValue |
 //                    UIUserNotificationType.Alert.rawValue, categories: [category])
             
-        } else {
+//        } else {
             // 这里才开始向用户提示推送
             //JPUSHService.registerForRemoteNotificationTypes(
 //            APService.registerForRemoteNotificationTypes(
 //                UIUserNotificationType.Badge.rawValue |
 //                    UIUserNotificationType.Sound.rawValue |
 //                    UIUserNotificationType.Alert.rawValue, categories: nil)
-        }
+//        }
     }
 
     // MARK: Navigation

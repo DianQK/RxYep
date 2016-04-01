@@ -79,8 +79,16 @@ let defaultFailureHandler: FailureHandler = { reason, errorMessage in
 
 func queryComponents(key: String, value: AnyObject) -> [(String, String)] {
     func escape(string: String) -> String {
-        let legalURLCharactersToBeEscaped: CFStringRef = ":/?&=;+!@#$()',*"
-        return CFURLCreateStringByAddingPercentEscapes(nil, string, nil, legalURLCharactersToBeEscaped, CFStringBuiltInEncodings.UTF8.rawValue) as String
+        
+        // TODO: - 测试修改结果
+//        let legalURLCharactersToBeEscaped: CFStringRef = ":/?&=;+!@#$()',*"
+//        return CFURLCreateStringByAddingPercentEscapes(nil, string, nil, legalURLCharactersToBeEscaped, CFStringBuiltInEncodings.UTF8.rawValue) as String
+        
+        // NSString stringByAddingPercentEncodingWithAllowedCharacters:] instead, which always uses the recommended UTF-8 encoding, and which encodes for a specific URL component or subcomponent (since each URL component or subcomponent has different rules for what characters are valid).")
+        
+        let legalURLCharactersToBeEscaped = NSCharacterSet(charactersInString: ":/?&=;+!@#$()',*")
+        return string.stringByAddingPercentEncodingWithAllowedCharacters(legalURLCharactersToBeEscaped)!
+
     }
 
     var components: [(String, String)] = []
