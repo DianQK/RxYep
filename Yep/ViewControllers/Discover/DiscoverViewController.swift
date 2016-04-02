@@ -88,18 +88,21 @@ class DiscoverViewController: BaseViewController {
                     self.filterView.showInView(window)
                 }
             }.addDisposableTo(rx_disposeBag)
+        /// LoadMore
+        let loadMoreTrigger = rx_sentMessage(#selector(DiscoverViewController.collectionView(_:willDisplayCell:forItemAtIndexPath:)))
+            .flatMap { objects -> Driver<Void> in
+                let objects = objects as [AnyObject]
+                if let _ = objects[1] as? LoadMoreCollectionViewCell {
+                    println("load more discovered users")
+                    return Driver.just(())
+                } else {
+                    return Driver.empty()
+                }
+            }.asDriver(onErrorJustReturn: ())
 
         viewModel = DiscoverViewModel(input: (
             refreshTrigger: refreshControl.rx_controlEvent(.ValueChanged).asDriver(),
-            loadMoreTrigger: rx_sentMessage(#selector(DiscoverViewController.collectionView(_:willDisplayCell:forItemAtIndexPath:)))
-                .flatMap { objects -> Driver<Void> in
-                    let objects = objects as [AnyObject]
-                    if let cell = objects[1] as? LoadMoreCollectionViewCell where !cell.loadingActivityIndicator.isAnimating() {
-                        return Driver.just(())
-                    } else {
-                        return Driver.empty()
-                    }
-                }.asDriver(onErrorJustReturn: ()),
+            loadMoreTrigger: loadMoreTrigger,
             filterStyleChanged: filterView.rx_itemSelected.asDriver(onErrorJustReturn: (.Cancel, 0)),
             modeChanged: modeButtonItem.rx_tap.asDriver()
         ))
@@ -183,16 +186,6 @@ class DiscoverViewController: BaseViewController {
             }
             .addDisposableTo(rx_disposeBag)
         
-//        rx_sentMessage(#selector(DiscoverViewController.collectionView(_:willDisplayCell:forItemAtIndexPath:)))
-//            .flatMap { objects -> Driver<Void> in
-//                let objects = objects as [AnyObject]
-//                if let cell = objects[1] as? LoadMoreCollectionViewCell where !cell.loadingActivityIndicator.isAnimating() {
-//                    return Driver.just(())
-//                } else {
-//                    return Driver.empty()
-//                }
-//            }.asDriver(onErrorJustReturn: ()).debug("LoadMore").drive(viewModel.loadNextPageTrigger).addDisposableTo(rx_disposeBag)
-        
     }
 
     // MARK: - Navigation
@@ -231,7 +224,6 @@ extension DiscoverViewController: UICollectionViewDelegate, UICollectionViewDele
         switch dataSource.sectionAtIndex(indexPath.section).model {
         case .LoadMore:
             if let cell = cell as? LoadMoreCollectionViewCell {
-                println("load more discovered users")
                 if !cell.loadingActivityIndicator.isAnimating() {
                     cell.loadingActivityIndicator.startAnimating()
                     

@@ -50,8 +50,8 @@ class DiscoverViewModel {
     private let disposeBag = DisposeBag()
     
     init(input: (refreshTrigger: Driver<Void>, loadMoreTrigger: Driver<Void>, filterStyleChanged: Driver<(RxActionSheetView.Item, Int)>, modeChanged: Driver<Void>)) {
-        /// 尝试恢复保存的排序姿势
         
+        /// 尝试恢复保存的排序姿势
         if let value = YepUserDefaults.discoveredUserSortStyle.value,
             _discoveredUserSortStyle = DiscoveredUserSortStyle(rawValue: value) {
             discoveredUserSortStyle.value = _discoveredUserSortStyle
@@ -73,7 +73,7 @@ class DiscoverViewModel {
         input.loadMoreTrigger
             .withLatestFrom(currentPageIndex.asDriver())
             .withLatestFrom(discoveredUserSortStyle.asDriver()) { $0 }
-            .flatMapLatest { rx_discoverUsers(masterSkillIDs: [], learningSkillIDs: [], discoveredUserSortStyle: $1, inPage: $0 + 1, withPerPage: self.perPage) }
+            .flatMapLatest { rx_discoverUsers(masterSkillIDs: [], learningSkillIDs: [], discoveredUserSortStyle: $1, inPage: $0 + 1, withPerPage: self.perPage) }.debug("loadMoreResult")
             .driveNext { [unowned self] in
                 switch $0 {
                 case .Success(let users):
