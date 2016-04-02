@@ -31,13 +31,6 @@ class DiscoverViewController: BaseViewController {
     private let NormalUserIdentifier = "DiscoverNormalUserCell"
     private let CardUserIdentifier = "DiscoverCardUserCell"
     private let loadMoreCollectionViewCellID = "LoadMoreCollectionViewCell"
-    // viewModel
-    private var userMode: DiscoverUserMode = .Card {
-        didSet {
-            layout.userMode = userMode
-            discoveredUsersCollectionView.reloadData()
-        }
-    }
     
     private let layout = DiscoverFlowLayout()
     
@@ -71,8 +64,6 @@ class DiscoverViewController: BaseViewController {
         discoveredUsersCollectionView.registerNib(UINib(nibName: NormalUserIdentifier, bundle: nil), forCellWithReuseIdentifier: NormalUserIdentifier)
         discoveredUsersCollectionView.registerNib(UINib(nibName: CardUserIdentifier, bundle: nil), forCellWithReuseIdentifier: CardUserIdentifier)
         discoveredUsersCollectionView.registerNib(UINib(nibName: loadMoreCollectionViewCellID, bundle: nil), forCellWithReuseIdentifier: loadMoreCollectionViewCellID)
-
-        userMode = .Card
 
         refreshControl.tintColor = UIColor.lightGrayColor()
         refreshControl.layer.zPosition = -1 // Make Sure Indicator below the Cells
@@ -226,9 +217,7 @@ extension DiscoverViewController: UICollectionViewDelegate, UICollectionViewDele
             if let cell = cell as? LoadMoreCollectionViewCell {
                 if !cell.loadingActivityIndicator.isAnimating() {
                     cell.loadingActivityIndicator.startAnimating()
-                    
                 }
-                
             }
         default: break
         }
