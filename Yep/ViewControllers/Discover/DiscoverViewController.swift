@@ -32,8 +32,6 @@ class DiscoverViewController: BaseViewController {
     private let CardUserIdentifier = "DiscoverCardUserCell"
     private let loadMoreCollectionViewCellID = "LoadMoreCollectionViewCell"
     
-    private let layout = DiscoverFlowLayout()
-    
     private let refreshControl = UIRefreshControl()
 
     private lazy var filterView: RxActionSheetView = RxActionSheetView()
@@ -59,7 +57,6 @@ class DiscoverViewController: BaseViewController {
         view.backgroundColor = UIColor.whiteColor()
 
         discoveredUsersCollectionView.backgroundColor = UIColor.clearColor()
-        discoveredUsersCollectionView.setCollectionViewLayout(layout, animated: false)
 
         discoveredUsersCollectionView.registerNib(UINib(nibName: NormalUserIdentifier, bundle: nil), forCellWithReuseIdentifier: NormalUserIdentifier)
         discoveredUsersCollectionView.registerNib(UINib(nibName: CardUserIdentifier, bundle: nil), forCellWithReuseIdentifier: CardUserIdentifier)
