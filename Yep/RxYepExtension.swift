@@ -11,13 +11,13 @@ import RxCocoa
 
 extension UITableView {
     
-    public func rx_modelItemSelected<T>(modelType: T.Type) -> ControlEvent<(model: T, item: NSIndexPath)> {
-        let source: Observable<(model: T, item: NSIndexPath)> = rx_itemSelected.flatMap { [weak self] indexPath -> Observable<(model: T, item: NSIndexPath)> in
+    public func rx_modelItemSelected<T>(modelType: T.Type) -> ControlEvent<(tableView: UITableView, model: T, item: NSIndexPath)> {
+        let source: Observable<(tableView: UITableView, model: T, item: NSIndexPath)> = rx_itemSelected.flatMap { [weak self] indexPath -> Observable<(tableView: UITableView, model: T, item: NSIndexPath)> in
             guard let view = self else {
                 return Observable.empty()
             }
             
-            return Observable.just((model: try view.rx_modelAtIndexPath(indexPath), item: indexPath))
+            return Observable.just((tableView: view, model: try view.rx_modelAtIndexPath(indexPath), item: indexPath))
         }
         
         return ControlEvent(events: source)

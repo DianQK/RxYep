@@ -839,11 +839,47 @@ func searchUsersByMobile(mobile: String, failureHandler: FailureHandler?, comple
 
 typealias UploadContact = [String: String]
 
+func rx_friendsInContacts(contacts: [UploadContact]) -> Driver<RxYepResult<[DiscoveredUser]>> {
+    
+    if let
+        contactsData = try? NSJSONSerialization.dataWithJSONObject(contacts, options: .PrettyPrinted),
+        contactsString = NSString(data: contactsData, encoding: NSUTF8StringEncoding) {
+        
+        //        RxYepResult
+        
+        let requestParameters: JSONDictionary = [
+            "contacts": contactsString
+        ]
+        
+        let parse: JSONDictionary -> [DiscoveredUser]? = { data in
+            if let registeredContacts = data["registered_users"] as? [JSONDictionary] {
+                
+                //println("registeredContacts: \(registeredContacts)")
+                
+                return registeredContacts.flatMap { parseDiscoveredUser($0) }
+                
+            } else {
+                return nil
+            }
+        }
+        
+        let resource = authJsonResource(path: "/v1/contacts/upload", method: .POST, requestParameters: requestParameters, parse: parse)
+        
+        return rx_apiRequest({_ in}, baseURL: yepBaseURL, resource: resource)
+        
+    } else {
+        return Driver.just(RxYepResult.Success([])) // 额、、放在这里不大合适哈
+    }
+}
+
+// TODO: - Swifty 化
 func friendsInContacts(contacts: [UploadContact], failureHandler: FailureHandler?, completion: [DiscoveredUser] -> Void) {
 
     if let
         contactsData = try? NSJSONSerialization.dataWithJSONObject(contacts, options: .PrettyPrinted),
         contactsString = NSString(data: contactsData, encoding: NSUTF8StringEncoding) {
+        
+//        RxYepResult
 
             let requestParameters: JSONDictionary = [
                 "contacts": contactsString
@@ -854,15 +890,7 @@ func friendsInContacts(contacts: [UploadContact], failureHandler: FailureHandler
 
                     //println("registeredContacts: \(registeredContacts)")
                     
-                    var discoveredUsers = [DiscoveredUser]()
-
-                    for registeredContact in registeredContacts {
-                        if let discoverUser = parseDiscoveredUser(registeredContact) {
-                            discoveredUsers.append(discoverUser)
-                        }
-                    }
-
-                    return discoveredUsers
+                    return registeredContacts.flatMap { parseDiscoveredUser($0) }
 
                 } else {
                     return nil

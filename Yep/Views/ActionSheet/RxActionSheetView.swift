@@ -322,9 +322,9 @@ class RxActionSheetView: UIView {
                 }
         }.addDisposableTo(rx_disposeBag)
         
-        tableView.rx_modelItemSelected(Item).subscribeNext { [unowned self] item, ip in
+        tableView.rx_modelItemSelected(Item).subscribeNext { [unowned self] tv, item, ip in
             defer {
-                self.tableView.deselectRowAtIndexPath(ip, animated: true)
+                tv.deselectRowAtIndexPath(ip, animated: true)
                 // TODO: 修改 hide 逻辑
                 self.hide()
             }

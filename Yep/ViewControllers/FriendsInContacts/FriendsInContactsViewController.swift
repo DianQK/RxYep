@@ -8,6 +8,11 @@
 
 import UIKit
 import APAddressBook
+import RxSwift
+import RxCocoa
+import RxDataSources
+import RxOptional
+import NSObject_Rx
 
 class FriendsInContactsViewController: BaseViewController {
 
@@ -18,24 +23,13 @@ class FriendsInContactsViewController: BaseViewController {
     @IBOutlet private weak var friendsTableView: UITableView!
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
 
+    var viewModel: FriendsInContactsViewModel!
+    
     private lazy var addressBook: APAddressBook = {
         let addressBook = APAddressBook()
         addressBook.fieldsMask = APContactField(rawValue: APContactField.Name.rawValue | APContactField.PhonesOnly.rawValue)
         return addressBook
     }()
-
-    private var discoveredUsers = [DiscoveredUser]() {
-        didSet {
-            if discoveredUsers.count > 0 {
-                updateFriendsTableView()
-
-                NSNotificationCenter.defaultCenter().postNotificationName(Notification.NewFriends, object: nil)
-
-            } else {
-                friendsTableView.tableFooterView = InfoView(NSLocalizedString("No more new friends.", comment: ""))
-            }
-        }
-    }
     
     private let cellIdentifier = "ContactsCell"
     
@@ -50,105 +44,58 @@ class FriendsInContactsViewController: BaseViewController {
         friendsTableView.registerNib(UINib(nibName: cellIdentifier, bundle: nil), forCellReuseIdentifier: cellIdentifier)
         friendsTableView.rowHeight = 80
         friendsTableView.tableFooterView = UIView()
-
-        addressBook.loadContacts { (contacts, error) -> Void in
-            
-            if let contacts = contacts {
-
-                var uploadContacts = [UploadContact]()
-
-                for contact in contacts {
-
-                    if let name = contact.name {
-
-                        if let phones = contact.phones{
-                            for phone in phones {
-                                if let compositeName = name.compositeName, number = phone.number {
-                                    let uploadContact: UploadContact = ["name": compositeName , "number": number]
-                                    uploadContacts.append(uploadContact)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                //println(uploadContacts)
-
-                dispatch_async(dispatch_get_main_queue()) { [weak self] in
-                    self?.activityIndicator.startAnimating()
-                }
-
-                friendsInContacts(uploadContacts, failureHandler: { (reason, errorMessage) in
-                    defaultFailureHandler(reason: reason, errorMessage: errorMessage)
-
-                    dispatch_async(dispatch_get_main_queue()) { [weak self] in
-                        self?.activityIndicator.stopAnimating()
-                    }
-
-                }, completion: { discoveredUsers in
-                    dispatch_async(dispatch_get_main_queue()) { [weak self] in
-                        self?.discoveredUsers = discoveredUsers
-
-                        self?.activityIndicator.stopAnimating()
-                    }
-                })
+        
+        viewModel = FriendsInContactsViewModel(addressBook: addressBook)
+        /// 结果绑定到 TableView
+        viewModel.elements.asObservable()
+            .bindTo(friendsTableView.rx_itemsWithCellIdentifier(cellIdentifier, cellType: ContactsCell.self)) { _, discoveredUser, cell in
+                cell.configureWithDiscoveredUser(discoveredUser)
             }
-        }
-    }
-
-    // MARK: Actions
-
-    private func updateFriendsTableView() {
-        friendsTableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: UITableViewRowAnimation.Automatic)
+            .addDisposableTo(rx_disposeBag)
+        
+        /// 如果没有结果就显示没有咯
+        viewModel.elements.asObservable()
+            .skip(1) // 上黑科技解决加载问题，毕竟第一次的空是不需要的
+            .map { $0.isEmpty }
+            .subscribeNext { isEmpty in
+                switch isEmpty {
+                case true:
+                    self.friendsTableView.tableFooterView = InfoView(NSLocalizedString("No more new friends.", comment: ""))
+                case false:
+                    NSNotificationCenter.defaultCenter().postNotificationName(Notification.NewFriends, object: nil)
+                }
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        /// 绑定加载状态
+        viewModel.isLoading.asObservable()
+            .bindTo(activityIndicator.rx_animating)
+            .addDisposableTo(rx_disposeBag)
+        
+        /// 点击事件
+        friendsTableView.rx_modelItemSelected(DiscoveredUser)
+            .subscribeNext { [unowned self] tv, i, ip in
+                self.performSegueWithIdentifier("showProfile", sender: Box(i))
+                tv.deselectRowAtIndexPath(ip, animated: true)
+            }
+            .addDisposableTo(rx_disposeBag)
+        
     }
 
     // MARK: - Navigation
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-
-        if segue.identifier == "showProfile" {
-            if let indexPath = sender as? NSIndexPath {
-                let discoveredUser = discoveredUsers[indexPath.row]
-
-                let vc = segue.destinationViewController as! ProfileViewController
-
-                if discoveredUser.id != YepUserDefaults.userID.value {
-                    vc.profileUser = ProfileUser.DiscoveredUserType(discoveredUser)
-                }
-
-                vc.setBackButtonWithTitle()
-
-                vc.hidesBottomBarWhenPushed = true
+        
+        if let discoveredUserBox = sender as? Box<DiscoveredUser> where segue.identifier == "showProfile" {
+            let vc = segue.destinationViewController as! ProfileViewController
+            
+            if discoveredUserBox.value.id != YepUserDefaults.userID.value {
+                vc.profileUser = ProfileUser.DiscoveredUserType(discoveredUserBox.value)
             }
+            
+            vc.setBackButtonWithTitle()
+            
+            vc.hidesBottomBarWhenPushed = true
         }
     }
 }
-
-// MARK: UITableViewDataSource, UITableViewDelegate
-
-extension FriendsInContactsViewController: UITableViewDataSource, UITableViewDelegate {
-
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return discoveredUsers.count
-    }
-
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier) as! ContactsCell
-
-        let discoveredUser = discoveredUsers[indexPath.row]
-
-        cell.configureWithDiscoveredUser(discoveredUser)
-
-        return cell
-    }
-
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-
-        defer {
-            tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        }
-
-        performSegueWithIdentifier("showProfile", sender: indexPath)
-    }
-}
-
