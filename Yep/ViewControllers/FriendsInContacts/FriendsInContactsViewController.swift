@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import APAddressBook
 import RxSwift
 import RxCocoa
 import RxDataSources
@@ -25,12 +24,6 @@ class FriendsInContactsViewController: UIViewController {
 
     var viewModel: FriendsInContactsViewModel!
     
-    private lazy var addressBook: APAddressBook = {
-        let addressBook = APAddressBook()
-        addressBook.fieldsMask = APContactField(rawValue: APContactField.Name.rawValue | APContactField.PhonesOnly.rawValue)
-        return addressBook
-    }()
-    
     private let cellIdentifier = "ContactsCell"
     
     override func viewDidLoad() {
@@ -45,7 +38,7 @@ class FriendsInContactsViewController: UIViewController {
         friendsTableView.rowHeight = 80
         friendsTableView.tableFooterView = UIView()
         
-        viewModel = FriendsInContactsViewModel(addressBook: addressBook)
+        viewModel = FriendsInContactsViewModel()
         /// 结果绑定到 TableView
         viewModel.elements.asObservable()
             .bindTo(friendsTableView.rx_itemsWithCellIdentifier(cellIdentifier, cellType: ContactsCell.self)) { _, discoveredUser, cell in

@@ -16,9 +16,15 @@ class FriendsInContactsViewModel {
     
     let isLoading = Variable(false)
     
-    let disposeBag = DisposeBag()
+    private let disposeBag = DisposeBag()
     
-    init(addressBook: APAddressBook) { // 这就是一个比较糟糕的设计了 ==
+    private lazy var addressBook: APAddressBook = {
+        let addressBook = APAddressBook()
+        addressBook.fieldsMask = APContactField(rawValue: APContactField.Name.rawValue | APContactField.PhonesOnly.rawValue)
+        return addressBook
+    }()
+    
+    init() { // 这就是一个比较糟糕的设计了 ==
         
         let request = addressBook.rx_loadContacts()
             .map {
