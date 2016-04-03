@@ -8,8 +8,11 @@
 
 import UIKit
 import Ruler
+import RxSwift
+import RxCocoa
+import NSObject_Rx
 
-class AboutViewController: SegueViewController {
+class AboutViewController: UIViewController {
 
     @IBOutlet private weak var appLogoImageView: UIImageView!
     @IBOutlet private weak var appLogoImageViewTopConstraint: NSLayoutConstraint!
@@ -26,11 +29,15 @@ class AboutViewController: SegueViewController {
     private let aboutCellID = "AboutCell"
 
     private let rowHeight: CGFloat = Ruler.iPhoneVertical(50, 60, 60, 60).value
+    
+    private enum Row {
+        case Pods, Rate, Terms
+    }
 
-    private let aboutAnnotations: [String] = [
-        NSLocalizedString("Pods help Yep", comment: ""),
-        NSLocalizedString("Rate Yep on App Store", comment: ""),
-        NSLocalizedString("Terms of Service", comment: ""),
+    private let aboutAnnotations: [(Row, String)] = [
+        (.Pods, NSLocalizedString("Pods help Yep", comment: "")),
+        (.Rate, NSLocalizedString("Rate Yep on App Store", comment: "")),
+        (.Terms, NSLocalizedString("Terms of Service", comment: ""))
     ]
 
     override func viewDidLoad() {
@@ -50,65 +57,30 @@ class AboutViewController: SegueViewController {
         }
 
         aboutTableView.registerNib(UINib(nibName: aboutCellID, bundle: nil), forCellReuseIdentifier: aboutCellID)
-
+        aboutTableView.rowHeight = rowHeight
         aboutTableViewHeightConstraint.constant = rowHeight * CGFloat(aboutAnnotations.count) + 1
-    }
-}
-
-// MARK: - UITableViewDataSource, UITableViewDelegate
-
-extension AboutViewController: UITableViewDataSource, UITableViewDelegate {
-
-    private enum Row: Int {
-        case Pods = 1
-        case Rate
-        case Terms
-    }
-
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return aboutAnnotations.count + 1
-    }
-
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-
-        switch indexPath.row {
-        case 0:
-            return UITableViewCell()
-        default:
-            let cell = tableView.dequeueReusableCellWithIdentifier(aboutCellID) as! AboutCell
-            let annotation = aboutAnnotations[indexPath.row - 1]
-            cell.annotationLabel.text = annotation
-            return cell
-        }
-    }
-
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        switch indexPath.row {
-        case 0:
-            return 1
-        default:
-            return rowHeight
-        }
-    }
-
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-
-        defer {
-            tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        }
-
-        switch indexPath.row {
-        case Row.Pods.rawValue:
-            performSegueWithIdentifier("showPodsHelpYep", sender: nil)
-        case Row.Rate.rawValue:
-            UIApplication.sharedApplication().openURL(NSURL(string: YepConfig.appURLString)!)
-        case Row.Terms.rawValue:
-            if let URL = NSURL(string: YepConfig.termsURLString) {
-                yep_openURL(URL)
+        
+        Observable.just(aboutAnnotations)
+            .bindTo(aboutTableView.rx_itemsWithCellIdentifier(aboutCellID, cellType: AboutCell.self)) { _, i, c in
+                c.annotationLabel.text = i.1
             }
-        default:
-            break
-        }
+            .addDisposableTo(rx_disposeBag)
+        
+        aboutTableView.rx_modelItemSelected((Row, String))
+            .subscribeNext { [unowned self] tv, i, ip in
+                switch i.0 {
+                case .Pods:
+                    self.yep_performSegueWithIdentifier("showPodsHelpYep", sender: nil)
+                case .Rate:
+                    UIApplication.sharedApplication().openURL(NSURL(string: YepConfig.appURLString)!)
+                case .Terms:
+                    if let URL = NSURL(string: YepConfig.termsURLString) {
+                        self.yep_openURL(URL)
+                    }
+                }
+                tv.deselectRowAtIndexPath(ip, animated: true)
+            }
+            .addDisposableTo(rx_disposeBag)
     }
-}
 
+}

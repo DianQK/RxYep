@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
         <!--About View Controller-->
@@ -22,10 +23,6 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="300" id="9DH-nb-SVb"/>
                                 </constraints>
-                                <connections>
-                                    <outlet property="dataSource" destination="B7e-qT-n3V" id="dzn-ml-iBp"/>
-                                    <outlet property="delegate" destination="B7e-qT-n3V" id="JJh-7h-AWb"/>
-                                </connections>
                             </tableView>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="yep_icon_solo" translatesAutoresizingMaskIntoConstraints="NO" id="gjf-PL-dZm">
                                 <rect key="frame" x="240" y="40" width="120" height="120"/>
@@ -48,21 +45,37 @@
                                 <color key="textColor" red="0.60000002379999995" green="0.60000002379999995" blue="0.60000002379999995" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="A2q-wT-vmy" userLabel="Line">
+                                <rect key="frame" x="20" y="268" width="580" height="1"/>
+                                <color key="backgroundColor" red="0.78431372549019607" green="0.7803921568627451" blue="0.80000000000000004" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="0.5" id="EWJ-MO-7dR"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="ukn-Rf-ygB" firstAttribute="leading" secondItem="EZp-Kz-Rn6" secondAttribute="leading" id="1Zp-vD-DIG"/>
                             <constraint firstAttribute="trailing" secondItem="ukn-Rf-ygB" secondAttribute="trailing" id="5gg-zK-zCg"/>
+                            <constraint firstItem="A2q-wT-vmy" firstAttribute="leading" secondItem="EZp-Kz-Rn6" secondAttribute="leadingMargin" id="5zp-Pa-z3C"/>
+                            <constraint firstAttribute="trailing" secondItem="A2q-wT-vmy" secondAttribute="trailing" id="6GH-eA-IuO"/>
                             <constraint firstItem="YGt-Mh-BQL" firstAttribute="centerX" secondItem="STw-iV-6mk" secondAttribute="centerX" id="AiP-6p-eVX"/>
                             <constraint firstAttribute="bottom" secondItem="rHG-mc-O86" secondAttribute="bottom" constant="8" id="D0h-Bs-Xqb"/>
+                            <constraint firstItem="ukn-Rf-ygB" firstAttribute="top" secondItem="A2q-wT-vmy" secondAttribute="bottom" id="DMC-2s-Yv0"/>
                             <constraint firstItem="YGt-Mh-BQL" firstAttribute="top" secondItem="STw-iV-6mk" secondAttribute="bottom" constant="8" id="GeV-CJ-x86"/>
                             <constraint firstItem="gjf-PL-dZm" firstAttribute="top" secondItem="3gP-F0-Md3" secondAttribute="bottom" constant="20" id="Vkq-1i-06m"/>
                             <constraint firstAttribute="centerX" secondItem="rHG-mc-O86" secondAttribute="centerX" id="hSy-Fg-9yg"/>
                             <constraint firstItem="rHG-mc-O86" firstAttribute="top" secondItem="ukn-Rf-ygB" secondAttribute="bottom" constant="8" id="nGz-w4-AF9"/>
+                            <constraint firstItem="A2q-wT-vmy" firstAttribute="leading" secondItem="EZp-Kz-Rn6" secondAttribute="leading" constant="15" id="ne9-3G-XcO"/>
                             <constraint firstItem="STw-iV-6mk" firstAttribute="centerX" secondItem="gjf-PL-dZm" secondAttribute="centerX" constant="0.5" id="oa7-44-D2a"/>
                             <constraint firstAttribute="centerX" secondItem="gjf-PL-dZm" secondAttribute="centerX" id="yZr-p4-Cz5"/>
                             <constraint firstItem="STw-iV-6mk" firstAttribute="top" secondItem="gjf-PL-dZm" secondAttribute="bottom" constant="19" id="zqS-j4-rlV"/>
                         </constraints>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="ne9-3G-XcO"/>
+                            </mask>
+                        </variation>
                     </view>
                     <connections>
                         <outlet property="aboutTableView" destination="ukn-Rf-ygB" id="MUW-fB-NIH"/>

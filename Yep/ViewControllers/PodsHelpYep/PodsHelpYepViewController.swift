@@ -7,10 +7,17 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
+import NSObject_Rx
 
 class PodsHelpYepViewController: UITableViewController {
 
     private let pods: [[String: String]] = [
+        [
+            "name": "RxSwift",
+            "URLString": "https://github.com/ReactiveX/RxSwift",
+        ],
         [
             "name": "RealmSwift",
             "URLString": "https://realm.io",
@@ -88,41 +95,22 @@ class PodsHelpYepViewController: UITableViewController {
         title = NSLocalizedString("Pods", comment: "")
 
         tableView.tableFooterView = UIView()
+        tableView.dataSource = nil
+        tableView.delegate = nil
+        
+        Observable.just(pods).asObservable()
+            .bindTo(tableView.rx_itemsWithCellIdentifier("PodCell")) { _, i, c in
+                c.textLabel?.text = i["name"]
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        tableView.rx_modelItemSelected([String: String])
+            .subscribeNext { [unowned self] tb, i, ip in
+                self.yep_openURL(NSURL(string: i["URLString"]!)!)
+                tb.deselectRowAtIndexPath(ip, animated: true)
+            }
+            .addDisposableTo(rx_disposeBag)
+        
     }
 
-    // MARK: - Table view data source
-
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1
-    }
-
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return pods.count
-    }
-
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("PodCell", forIndexPath: indexPath) 
-
-        let pod = pods[indexPath.row]
-
-        cell.textLabel?.text = pod["name"]
-
-        return cell
-    }
-
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-
-        defer {
-            tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        }
-
-        let pod = pods[indexPath.row]
-
-        if let
-            URLString = pod["URLString"],
-            URL = NSURL(string: URLString) {
-                yep_openURL(URL)
-        }
-    }
 }
-
