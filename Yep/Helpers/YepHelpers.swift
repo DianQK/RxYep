@@ -8,7 +8,7 @@
 
 import Foundation
 
-final class Box<T> {
+public final class Box<T> {
     let value: T
 
     init(_ value: T) {
@@ -16,7 +16,7 @@ final class Box<T> {
     }
 }
 
-final class HashBox<T: Hashable> {
+public final class HashBox<T: Hashable> {
     let value: T
     
     init(_ value: T) {
@@ -24,7 +24,7 @@ final class HashBox<T: Hashable> {
     }
 }
 
-final class OptionalBox<T> {
+public final class OptionalBox<T> {
     let value: T?
     
     init(_ value: T?) {
@@ -33,7 +33,7 @@ final class OptionalBox<T> {
     
 }
 
-final class OptionalHashBox<T: Hashable> {
+public final class OptionalHashBox<T: Hashable> {
     let value: T?
     
     init(_ value: T?) {
@@ -43,21 +43,21 @@ final class OptionalHashBox<T: Hashable> {
 }
 
 extension HashBox: Hashable {
-    var hashValue: Int {
+    public var hashValue: Int {
         return value.hashValue
     }
 }
 
-func ==<T>(lhs: HashBox<T>, rhs: HashBox<T>) -> Bool {
+public func ==<T>(lhs: HashBox<T>, rhs: HashBox<T>) -> Bool {
     return lhs.value == rhs.value
 }
 
 extension OptionalHashBox: Hashable {
-    var hashValue: Int {
+    public var hashValue: Int {
         return value?.hashValue ?? 0
     }
 }
 
-func ==<T>(lhs: OptionalHashBox<T>, rhs: OptionalHashBox<T>) -> Bool {
+public func ==<T>(lhs: OptionalHashBox<T>, rhs: OptionalHashBox<T>) -> Bool {
     return lhs.value == rhs.value
 }

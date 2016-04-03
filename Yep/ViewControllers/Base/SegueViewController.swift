@@ -8,9 +8,9 @@
 
 import UIKit
 
-class SegueViewController: UIViewController {
+public class SegueViewController: UIViewController {
 
-    override func performSegueWithIdentifier(identifier: String, sender: AnyObject?) {
+    public override func performSegueWithIdentifier(identifier: String, sender: AnyObject?) {
 
         if let navigationController = navigationController {
             guard navigationController.topViewController == self else {
@@ -24,7 +24,7 @@ class SegueViewController: UIViewController {
 
 extension UIViewController {
     
-    func yep_performSegueWithIdentifier<T>(identifier: String, sender: Box<T>?) {
+    public func yep_performSegueWithIdentifier<T>(identifier: String, sender: Box<T>?) {
         
         if let navigationController = navigationController {
             guard navigationController.topViewController == self else {
@@ -34,4 +34,17 @@ extension UIViewController {
         
         self.performSegueWithIdentifier(identifier, sender: sender)
     }
+    
+    
+    public func yep_performSegueWithIdentifier(identifier: String, sender: AnyObject?) {
+        
+        if let navigationController = navigationController {
+            guard navigationController.topViewController == self else {
+                return
+            }
+        }
+        
+        self.performSegueWithIdentifier(identifier, sender: sender)
+    }
+
 }

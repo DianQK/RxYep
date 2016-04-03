@@ -7,109 +7,84 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
+import NSObject_Rx
 
-class SearchedUsersViewController: BaseViewController {
+class SearchedUsersViewController: UIViewController, NavigationBarAutoShowable {
 
     var searchText = "NIX"
 
     @IBOutlet private weak var searchedUsersTableView: UITableView!
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
 
-    private var searchedUsers = [DiscoveredUser]() {
-        didSet {
-            if searchedUsers.count > 0 {
-                updateSearchedUsersTableView()
-
-            } else {
-                searchedUsersTableView.tableFooterView = InfoView(NSLocalizedString("No search results.", comment: ""))
-            }
-        }
+    private static let cellIdentifier = "ContactsCell"
+    
+    private var viewModel: SearchedUsersViewModel!
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        yepAutoShowNavigationBar()
     }
-
-    private let cellIdentifier = "ContactsCell"
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         title = NSLocalizedString("Search", comment: "") + " \"\(searchText)\""
 
-        searchedUsersTableView.registerNib(UINib(nibName: cellIdentifier, bundle: nil), forCellReuseIdentifier: cellIdentifier)
+        searchedUsersTableView.registerNib(UINib(nibName: SearchedUsersViewController.cellIdentifier, bundle: nil), forCellReuseIdentifier: SearchedUsersViewController.cellIdentifier)
         searchedUsersTableView.rowHeight = 80
 
         searchedUsersTableView.separatorColor = UIColor.yepCellSeparatorColor()
         searchedUsersTableView.separatorInset = YepConfig.ContactsCell.separatorInset
 
-        activityIndicator.startAnimating()
+//        activityIndicator.startAnimating()
 
-        searchUsersByQ(searchText, failureHandler: { [weak self] reason, errorMessage in
-            defaultFailureHandler(reason: reason, errorMessage: errorMessage)
-
-            dispatch_async(dispatch_get_main_queue()) {
-                self?.activityIndicator.stopAnimating()
+        viewModel = SearchedUsersViewModel(searchText: searchText)
+        
+        viewModel.isSearching.asObservable()
+            .bindTo(activityIndicator.rx_animating)
+            .addDisposableTo(rx_disposeBag)
+        
+        viewModel.notFoundUsers.asDriver()
+            .driveNext { [unowned self] notFoundUsers in
+                switch notFoundUsers {
+                case true: self.searchedUsersTableView.tableFooterView = InfoView(NSLocalizedString("No search results.", comment: ""))
+                case false: self.searchedUsersTableView.tableFooterView = UIView()
+                }
             }
-
-        }, completion: { [weak self] users in
-            dispatch_async(dispatch_get_main_queue()) {
-                self?.activityIndicator.stopAnimating()
-                self?.searchedUsers = users
+            .addDisposableTo(rx_disposeBag)
+        
+        viewModel.searchedUser.asObservable()
+            .bindTo(searchedUsersTableView.rx_itemsWithCellIdentifier(SearchedUsersViewController.cellIdentifier, cellType: ContactsCell.self)) { _, i, c in
+                c.configureWithDiscoveredUser(i)
             }
-        })
-    }
-
-    // MARK: Actions
-
-    private func updateSearchedUsersTableView() {
-        dispatch_async(dispatch_get_main_queue()) {
-            self.searchedUsersTableView.reloadData()
-        }
+            .addDisposableTo(rx_disposeBag)
+        
+        searchedUsersTableView.rx_modelItemSelected(DiscoveredUser)
+            .subscribeNext { [unowned self] tb, i, ip in
+                self.performSegueWithIdentifier("showProfile", sender: Box(i))
+                tb.deselectRowAtIndexPath(ip, animated: true)
+            }
+            .addDisposableTo(rx_disposeBag)
+        
     }
 
     // MARK: Navigation
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "showProfile" {
-            if let indexPath = sender as? NSIndexPath {
-                let discoveredUser = searchedUsers[indexPath.row]
-
-                let vc = segue.destinationViewController as! ProfileViewController
-
-                if discoveredUser.id != YepUserDefaults.userID.value {
-                    vc.profileUser = ProfileUser.DiscoveredUserType(discoveredUser)
-                }
-
-                vc.setBackButtonWithTitle()
-
-                vc.hidesBottomBarWhenPushed = true
+        
+        if let discoveredUserBox = sender as? Box<DiscoveredUser> where segue.identifier == "showProfile" {
+            let vc = segue.destinationViewController as! ProfileViewController
+            
+            if discoveredUserBox.value.id != YepUserDefaults.userID.value {
+                vc.profileUser = ProfileUser.DiscoveredUserType(discoveredUserBox.value)
             }
+            
+            vc.setBackButtonWithTitle()
+            
+            vc.hidesBottomBarWhenPushed = true
         }
+        
     }
 }
-
-// MARK: UITableViewDataSource, UITableViewDelegate
-
-extension SearchedUsersViewController: UITableViewDataSource, UITableViewDelegate {
-
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return searchedUsers.count
-    }
-
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier) as! ContactsCell
-
-        let discoveredUser = searchedUsers[indexPath.row]
-
-        cell.configureWithDiscoveredUser(discoveredUser)
-
-        return cell
-    }
-
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-
-        defer {
-            tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        }
-
-        performSegueWithIdentifier("showProfile", sender: indexPath)
-    }
-}
-

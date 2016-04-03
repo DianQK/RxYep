@@ -42,6 +42,7 @@
 		262DCA5A1CB0001B001C112A /* FriendsInContactsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 262DCA591CB0001B001C112A /* FriendsInContactsViewModel.swift */; };
 		262DCA5C1CB01AAD001C112A /* ContactsCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 262DCA5B1CB01AAD001C112A /* ContactsCell.xib */; };
 		262DCA5E1CB0A1DA001C112A /* ContactsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 262DCA5D1CB0A1DA001C112A /* ContactsViewModel.swift */; };
+		2630BEAB1CB15D80006EF432 /* SearchedUsersViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2630BEAA1CB15D80006EF432 /* SearchedUsersViewModel.swift */; };
 		263C023F1CAE0DD500E346D0 /* TScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 263C023E1CAE0DD500E346D0 /* TScheduler.swift */; };
 		263C02411CAE1B6800E346D0 /* RxActionSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 263C02401CAE1B6800E346D0 /* RxActionSheetView.swift */; };
 		263C02431CAE20F700E346D0 /* RxYepExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 263C02421CAE20F700E346D0 /* RxYepExtension.swift */; };
@@ -418,6 +419,7 @@
 		262DCA591CB0001B001C112A /* FriendsInContactsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FriendsInContactsViewModel.swift; path = ViewControllers/FriendsInContacts/FriendsInContactsViewModel.swift; sourceTree = "<group>"; };
 		262DCA5B1CB01AAD001C112A /* ContactsCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = ContactsCell.xib; path = Views/Cells/Contacts/ContactsCell.xib; sourceTree = "<group>"; };
 		262DCA5D1CB0A1DA001C112A /* ContactsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContactsViewModel.swift; path = ViewControllers/Contacts/ContactsViewModel.swift; sourceTree = "<group>"; };
+		2630BEAA1CB15D80006EF432 /* SearchedUsersViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SearchedUsersViewModel.swift; path = ViewControllers/SearchedUsers/SearchedUsersViewModel.swift; sourceTree = "<group>"; };
 		263C023E1CAE0DD500E346D0 /* TScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TScheduler.swift; sourceTree = "<group>"; };
 		263C02401CAE1B6800E346D0 /* RxActionSheetView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RxActionSheetView.swift; sourceTree = "<group>"; };
 		263C02421CAE20F700E346D0 /* RxYepExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RxYepExtension.swift; sourceTree = "<group>"; };
@@ -1023,6 +1025,7 @@
 			children = (
 				502048231B0F1BB3002EBFC7 /* SearchedUsersViewController.swift */,
 				50DEE05C1BEA100100015741 /* SearchedUsers.storyboard */,
+				2630BEAA1CB15D80006EF432 /* SearchedUsersViewModel.swift */,
 			);
 			name = SearchedUsers;
 			sourceTree = "<group>";
@@ -2674,6 +2677,7 @@
 				50FD75441C21097A0050A382 /* LinkContainerView.swift in Sources */,
 				50F5AF991BBBD02A0033C9BC /* FeedMediaCell.swift in Sources */,
 				5023DE331AB688F600B3EE96 /* UIColor+Yep.swift in Sources */,
+				2630BEAB1CB15D80006EF432 /* SearchedUsersViewModel.swift in Sources */,
 				503315971AC1017E0008A209 /* ChatLeftTextCell.swift in Sources */,
 				509B120F1C436E7C0000BE71 /* MentionView.swift in Sources */,
 				505262101C52050700292C6A /* ConcurrentOperation.swift in Sources */,

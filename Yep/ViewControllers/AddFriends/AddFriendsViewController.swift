@@ -16,7 +16,7 @@ import NSObject_Rx
 
 private typealias AddFriendsSection = AnimatableSectionModel<AddFriendsViewController.Section, String>
 
-class AddFriendsViewController: UIViewController {
+class AddFriendsViewController: UIViewController, NavigationBarAutoShowable {
 
     @IBOutlet private weak var addFriendsTableView: UITableView!
 
@@ -25,6 +25,11 @@ class AddFriendsViewController: UIViewController {
     
     private let section = Variable([AddFriendsSection(model: .Search, items: [""]),
         AddFriendsSection(model: .More, items: [AddFriendsViewController.More.Contacts.description])])
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        yepAutoShowNavigationBar()
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,7 +67,7 @@ class AddFriendsViewController: UIViewController {
                 case Section.More.rawValue:
                     let propose: Propose = {
                         proposeToAccess(.Contacts, agreed: { [weak self] in
-                            self?.performSegueWithIdentifier("showFriendsInContacts", sender: nil)
+                            self?.yep_performSegueWithIdentifier("showFriendsInContacts", sender: nil)
                             }, rejected: { [weak self] in
                                 self?.alertCanNotAccessContacts()
                             })
@@ -117,11 +122,11 @@ extension AddFriendsViewController: UITextFieldDelegate {
 
     func textFieldShouldReturn(textField: UITextField) -> Bool {
 
-        let text = textField.text
+        guard let text = textField.text where text.isNotEmpty else { return false }
 
         textField.resignFirstResponder()
 
-        performSegueWithIdentifier("showSearchedUsers", sender: Box(text))
+        yep_performSegueWithIdentifier("showSearchedUsers", sender: Box(text))
 
         return true
     }
