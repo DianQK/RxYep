@@ -161,7 +161,7 @@ class ContactsViewController: BaseViewController {
 //        }
 
         #if DEBUG
-            //view.addSubview(contactsFPSLabel)
+            view.addSubview(contactsFPSLabel)
         #endif
     }
 

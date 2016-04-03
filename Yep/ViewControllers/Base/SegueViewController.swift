@@ -21,3 +21,17 @@ class SegueViewController: UIViewController {
         super.performSegueWithIdentifier(identifier, sender: sender)
     }
 }
+
+extension UIViewController {
+    
+    func yep_performSegueWithIdentifier<T>(identifier: String, sender: Box<T>?) {
+        
+        if let navigationController = navigationController {
+            guard navigationController.topViewController == self else {
+                return
+            }
+        }
+        
+        self.performSegueWithIdentifier(identifier, sender: sender)
+    }
+}
