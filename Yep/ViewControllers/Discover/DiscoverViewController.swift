@@ -14,7 +14,7 @@ import RxDataSources
 import RxOptional
 import NSObject_Rx
 
-class DiscoverViewController: BaseViewController {
+class DiscoverViewController: YepBaseViewController {
 
     @IBOutlet weak var discoveredUsersCollectionView: DiscoverCollectionView!
     
@@ -135,7 +135,7 @@ class DiscoverViewController: BaseViewController {
             .subscribeNext { [unowned self] collectionView, model, item in
                 collectionView.deselectItemAtIndexPath(item, animated: true)
                 if let user = model.identity.value {
-                    self.performSegueWithIdentifier("showProfile", sender: Box(user))
+                    self.yep_performSegueWithIdentifier("showProfile", sender: Box(user))
                 }
             }
             .addDisposableTo(rx_disposeBag)

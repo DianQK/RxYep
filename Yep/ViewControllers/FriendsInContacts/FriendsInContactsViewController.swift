@@ -14,7 +14,7 @@ import RxDataSources
 import RxOptional
 import NSObject_Rx
 
-class FriendsInContactsViewController: BaseViewController {
+class FriendsInContactsViewController: YepBaseViewController {
 
     struct Notification {
         static let NewFriends = "NewFriendsInContactsNotification"
@@ -75,7 +75,7 @@ class FriendsInContactsViewController: BaseViewController {
         /// 点击事件
         friendsTableView.rx_modelItemSelected(DiscoveredUser)
             .subscribeNext { [unowned self] tv, i, ip in
-                self.performSegueWithIdentifier("showProfile", sender: Box(i))
+                self.yep_performSegueWithIdentifier("showProfile", sender: Box(i))
                 tv.deselectRowAtIndexPath(ip, animated: true)
             }
             .addDisposableTo(rx_disposeBag)

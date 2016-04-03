@@ -45,3 +45,39 @@ class BaseViewController: SegueViewController {
     }
 }
 
+class YepBaseViewController: UIViewController {
+    
+    var animatedOnNavigationBar = true
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        view.backgroundColor = UIColor.whiteColor()
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        guard let navigationController = navigationController else {
+            return
+        }
+        
+        navigationController.navigationBar.backgroundColor = nil
+        navigationController.navigationBar.translucent = true
+        navigationController.navigationBar.shadowImage = nil
+        navigationController.navigationBar.barStyle = UIBarStyle.Default
+        navigationController.navigationBar.setBackgroundImage(nil, forBarMetrics: UIBarMetrics.Default)
+        
+        let textAttributes = [
+            NSForegroundColorAttributeName: UIColor.yepNavgationBarTitleColor(),
+            NSFontAttributeName: UIFont.navigationBarTitleFont()
+        ]
+        
+        navigationController.navigationBar.titleTextAttributes = textAttributes
+        navigationController.navigationBar.tintColor = nil
+        
+        if navigationController.navigationBarHidden {
+            navigationController.setNavigationBarHidden(false, animated: animatedOnNavigationBar)
+        }
+    }
+}
