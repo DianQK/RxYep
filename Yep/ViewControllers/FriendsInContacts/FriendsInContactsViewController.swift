@@ -22,7 +22,7 @@ class FriendsInContactsViewController: UIViewController {
     @IBOutlet private weak var friendsTableView: UITableView!
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
 
-    var viewModel: FriendsInContactsViewModel!
+    private var viewModel: FriendsInContactsViewModel!
     
     private let cellIdentifier = "ContactsCell"
     

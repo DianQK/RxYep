@@ -24,9 +24,9 @@ class DiscoverViewController: UIViewController, NavigationBarAutoShowable {
 
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
     
-    var viewModel: DiscoverViewModel!
+    private var viewModel: DiscoverViewModel!
     
-    let dataSource = RxCollectionViewSectionedReloadDataSource<DiscoverSection>()
+    private let dataSource = RxCollectionViewSectionedReloadDataSource<DiscoverSection>()
 
     private static let NormalUserIdentifier = "DiscoverNormalUserCell"
     private static let CardUserIdentifier = "DiscoverCardUserCell"
