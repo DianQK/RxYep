@@ -14,7 +14,7 @@ import RxDataSources
 import RxOptional
 import NSObject_Rx
 
-class FriendsInContactsViewController: YepBaseViewController {
+class FriendsInContactsViewController: UIViewController {
 
     struct Notification {
         static let NewFriends = "NewFriendsInContactsNotification"

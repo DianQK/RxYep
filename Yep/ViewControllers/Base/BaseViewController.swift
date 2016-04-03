@@ -8,6 +8,18 @@
 
 import UIKit
 
+protocol NavigationBarAutoShowable: class {}
+
+extension NavigationBarAutoShowable where Self: UIViewController { // 事实上我们也可以用 method swizzle
+    
+    func yepAutoShowNavigationBar() {
+        if let navigationController = navigationController where navigationController.navigationBarHidden {
+            navigationController.setNavigationBarHidden(false, animated: true)
+        }
+    }
+    
+}
+
 class BaseViewController: SegueViewController {
     
     var animatedOnNavigationBar = true

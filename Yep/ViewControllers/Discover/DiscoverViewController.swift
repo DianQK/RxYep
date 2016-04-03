@@ -14,7 +14,7 @@ import RxDataSources
 import RxOptional
 import NSObject_Rx
 
-class DiscoverViewController: YepBaseViewController {
+class DiscoverViewController: UIViewController, NavigationBarAutoShowable {
 
     @IBOutlet weak var discoveredUsersCollectionView: DiscoverCollectionView!
     
@@ -28,9 +28,9 @@ class DiscoverViewController: YepBaseViewController {
     
     let dataSource = RxCollectionViewSectionedReloadDataSource<DiscoverSection>()
 
-    private let NormalUserIdentifier = "DiscoverNormalUserCell"
-    private let CardUserIdentifier = "DiscoverCardUserCell"
-    private let loadMoreCollectionViewCellID = "LoadMoreCollectionViewCell"
+    private static let NormalUserIdentifier = "DiscoverNormalUserCell"
+    private static let CardUserIdentifier = "DiscoverCardUserCell"
+    private static let loadMoreCollectionViewCellID = "LoadMoreCollectionViewCell"
     
     private let refreshControl = UIRefreshControl()
 
@@ -42,6 +42,11 @@ class DiscoverViewController: YepBaseViewController {
 
     deinit {
         println("deinit Discover")
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        yepAutoShowNavigationBar()
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -58,9 +63,9 @@ class DiscoverViewController: YepBaseViewController {
 
         discoveredUsersCollectionView.backgroundColor = UIColor.clearColor()
 
-        discoveredUsersCollectionView.registerNib(UINib(nibName: NormalUserIdentifier, bundle: nil), forCellWithReuseIdentifier: NormalUserIdentifier)
-        discoveredUsersCollectionView.registerNib(UINib(nibName: CardUserIdentifier, bundle: nil), forCellWithReuseIdentifier: CardUserIdentifier)
-        discoveredUsersCollectionView.registerNib(UINib(nibName: loadMoreCollectionViewCellID, bundle: nil), forCellWithReuseIdentifier: loadMoreCollectionViewCellID)
+        discoveredUsersCollectionView.registerNib(UINib(nibName: DiscoverViewController.NormalUserIdentifier, bundle: nil), forCellWithReuseIdentifier: DiscoverViewController.NormalUserIdentifier)
+        discoveredUsersCollectionView.registerNib(UINib(nibName: DiscoverViewController.CardUserIdentifier, bundle: nil), forCellWithReuseIdentifier: DiscoverViewController.CardUserIdentifier)
+        discoveredUsersCollectionView.registerNib(UINib(nibName: DiscoverViewController.loadMoreCollectionViewCellID, bundle: nil), forCellWithReuseIdentifier: DiscoverViewController.loadMoreCollectionViewCellID)
 
         refreshControl.tintColor = UIColor.lightGrayColor()
         refreshControl.layer.zPosition = -1 // Make Sure Indicator below the Cells
@@ -105,15 +110,15 @@ class DiscoverViewController: YepBaseViewController {
         dataSource.cellFactory = { ds, cv, ip, i in
             switch ds.sectionAtIndex(ip.section).model {
             case .Card:
-                let cell = cv.dequeueReusableCellWithReuseIdentifier(self.CardUserIdentifier, forIndexPath: ip) as! DiscoverCardUserCell
+                let cell = cv.dequeueReusableCellWithReuseIdentifier(DiscoverViewController.CardUserIdentifier, forIndexPath: ip) as! DiscoverCardUserCell
                 cell.configureWithDiscoveredUser(i.identity.value!, collectionView: cv, indexPath: ip)
                 return cell
             case .Normal:
-                let cell = cv.dequeueReusableCellWithReuseIdentifier(self.NormalUserIdentifier, forIndexPath: ip) as! DiscoverNormalUserCell
+                let cell = cv.dequeueReusableCellWithReuseIdentifier(DiscoverViewController.NormalUserIdentifier, forIndexPath: ip) as! DiscoverNormalUserCell
                 cell.configureWithDiscoveredUser(i.identity.value!, collectionView: cv, indexPath: ip)
                 return cell
             case .LoadMore:
-                let cell = cv.dequeueReusableCellWithReuseIdentifier(self.loadMoreCollectionViewCellID, forIndexPath: ip) as! LoadMoreCollectionViewCell
+                let cell = cv.dequeueReusableCellWithReuseIdentifier(DiscoverViewController.loadMoreCollectionViewCellID, forIndexPath: ip) as! LoadMoreCollectionViewCell
                 return cell
             }
         }
@@ -185,7 +190,6 @@ class DiscoverViewController: YepBaseViewController {
                 vc.profileUser = ProfileUser.DiscoveredUserType(discoveredUserBox.value)
             }
             vc.setBackButtonWithTitle()
-        
             vc.hidesBottomBarWhenPushed = true
         }
         
@@ -231,4 +235,3 @@ extension DiscoverViewController: UICollectionViewDelegate, UICollectionViewDele
     }
 
 }
-

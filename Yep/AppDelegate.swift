@@ -568,6 +568,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //UINavigationBar.appearance().setBackgroundImage(UIImage(named:"white"), forBarMetrics: .Default)
         //UINavigationBar.appearance().shadowImage = UIImage()
         //UINavigationBar.appearance().translucent = false
+        
+        UINavigationBar.appearance().backgroundColor = nil
+        UINavigationBar.appearance().translucent = true
+        UINavigationBar.appearance().shadowImage = nil
+        UINavigationBar.appearance().barStyle = UIBarStyle.Default
+        UINavigationBar.appearance().setBackgroundImage(nil, forBarMetrics: UIBarMetrics.Default)
 
         // TabBar
 
