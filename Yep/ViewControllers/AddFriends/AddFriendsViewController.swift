@@ -58,7 +58,7 @@ class AddFriendsViewController: UIViewController {
         
         addFriendsTableView.rx_modelItemSelected(IdentifiableValue<String>)
             .subscribeNext { [unowned self] tb, i, ip in
-                switch ip.section {
+                switch ip.section {  // TODO: - 这并不是一个好的方案
                 case Section.More.rawValue:
                     let propose: Propose = {
                         proposeToAccess(.Contacts, agreed: { [weak self] in

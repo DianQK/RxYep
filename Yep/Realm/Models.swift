@@ -11,8 +11,18 @@ import RealmSwift
 import MapKit
 
 // 总是在这个队列里使用 Realm
-//let realmQueue = dispatch_queue_create("com.Yep.realmQueue", DISPATCH_QUEUE_SERIAL)
-let realmQueue = dispatch_queue_create("com.YourApp.YourQueue", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, 0))
+let realmQueue = dispatch_queue_create("com.RxYep.realmQueue", DISPATCH_QUEUE_SERIAL)
+//let realmQueue = dispatch_queue_create("com.RxYep.realmQueue", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, 0))
+
+//public convenience init(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS, internalSerialQueueName: String = "rx.global_dispatch_queue.serial") {
+//    let priority = globalConcurrentQueueQOS.QOSClass
+//    self.init(queue: dispatch_get_global_queue(priority, UInt(0)), internalSerialQueueName: internalSerialQueueName)
+//}
+//
+//public convenience init(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS, internalSerialQueueName: String = "rx.global_dispatch_queue.serial") {
+//    let priority = globalConcurrentQueueQOS.QOSClass
+//    self.init(queue: dispatch_get_global_queue(priority, UInt(0)), internalSerialQueueName: internalSerialQueueName)
+//}
 
 // MARK: User
 

@@ -9,13 +9,21 @@
 import UIKit
 import RealmSwift
 import Ruler
-import KeyboardMan
+import RxSwift
+import RxCocoa
+import RxDataSources
+import RxOptional
+import NSObject_Rx
 
-class ContactsViewController: BaseViewController {
+private typealias ContactsSection = AnimatableSectionModel<ContactsViewController.Section, User>
+
+class ContactsViewController: UIViewController, NavigationBarAutoShowable {
 
     @IBOutlet weak var contactsTableView: UITableView!
 
-    @IBOutlet private weak var coverUnderStatusBarView: UIView!
+    @IBOutlet private weak var coverUnderStatusBarView: UIView! // 覆盖 Status Bar ？
+    
+    @IBOutlet weak var addFriendBarButton: UIBarButtonItem!
 
     #if DEBUG
     private lazy var contactsFPSLabel: FPSLabel = {
@@ -30,24 +38,22 @@ class ContactsViewController: BaseViewController {
     }
 
     private var originalNavigationControllerDelegate: UINavigationControllerDelegate?
-    private lazy var contactsSearchTransition: ContactsSearchTransition = {
-        return ContactsSearchTransition()
-    }()
+    private lazy var contactsSearchTransition = ContactsSearchTransition()
+    
+    private var viewModel: ContactsViewModel!
 
-//    private let keyboardMan = KeyboardMan()
-//    private var normalContactsTableViewContentInsetBottom: CGFloat?
-
-    private let cellIdentifier = "ContactsCell"
-
+    private static let cellIdentifier = "ContactsCell"
+    /// viewModel
     private lazy var friends = normalFriends()
-    private var filteredFriends: Results<User>?
-
+    /// viewModel
+    private var filteredFriends: Results<User>? // 数据持久化
+    /// viewModel
     private var searchedUsers = [DiscoveredUser]()
-
+    /// viewModel ?
     private var realmNotificationToken: NotificationToken?
 
     private lazy var noContactsFooterView: InfoView = InfoView(NSLocalizedString("No friends yet.\nTry discover or add some.", comment: ""))
-
+    /// viewModel
     private var noContacts = false {
         didSet {
             if noContacts != oldValue {
@@ -78,6 +84,11 @@ class ContactsViewController: BaseViewController {
 
         println("deinit Contacts")
     }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        yepAutoShowNavigationBar()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,39 +100,10 @@ class ContactsViewController: BaseViewController {
 
         coverUnderStatusBarView.hidden = true
 
-        // 超过一定人数才显示搜索框
-
-        //if friends.count > Ruler.iPhoneVertical(6, 8, 10, 12).value {
-        if friends.count > 0 {
-
-            let searchController = UISearchController(searchResultsController: nil)
-            searchController.delegate = self
-
-            searchController.searchResultsUpdater = self
-            searchController.dimsBackgroundDuringPresentation = false
-
-            searchController.searchBar.backgroundColor = UIColor.whiteColor()
-            searchController.searchBar.barTintColor = UIColor.whiteColor()
-            searchController.searchBar.searchBarStyle = .Minimal
-            searchController.searchBar.placeholder = NSLocalizedString("Search Friend", comment: "")
-            searchController.searchBar.sizeToFit()
-
-            searchController.searchBar.delegate = self
-
-            contactsTableView.tableHeaderView = searchController.searchBar
-
-            self.searchController = searchController
-
-            // ref http://stackoverflow.com/questions/30937275/uisearchcontroller-doesnt-hide-view-when-pushed
-            //self.definesPresentationContext = true
-
-            //contactsTableView.contentOffset.y = CGRectGetHeight(searchController.searchBar.frame)
-        }
-
         contactsTableView.separatorColor = UIColor.yepCellSeparatorColor()
         contactsTableView.separatorInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
 
-        contactsTableView.registerNib(UINib(nibName: cellIdentifier, bundle: nil), forCellReuseIdentifier: cellIdentifier)
+        contactsTableView.registerNib(UINib(nibName: ContactsViewController.cellIdentifier, bundle: nil), forCellReuseIdentifier: ContactsViewController.cellIdentifier)
         contactsTableView.rowHeight = 80
         contactsTableView.tableFooterView = UIView()
 
@@ -135,7 +117,7 @@ class ContactsViewController: BaseViewController {
             self?.updateContactsTableView()
         }
 
-        YepUserDefaults.nickname.bindListener(Listener.Nickname) { [weak self] _ in
+        YepUserDefaults.nickname.bindListener(Listener.Nickname) { [weak self] _ in // 两个绑定监听
             dispatch_async(dispatch_get_main_queue()) {
                 self?.updateContactsTableView()
             }
@@ -147,22 +129,95 @@ class ContactsViewController: BaseViewController {
             }
         }
 
-//        keyboardMan.animateWhenKeyboardAppear = { [weak self] _, keyboardHeight, _ in
-//            self?.normalContactsTableViewContentInsetBottom = self?.contactsTableView.contentInset.bottom
-//            self?.contactsTableView.contentInset.bottom = keyboardHeight
-//            self?.contactsTableView.scrollIndicatorInsets.bottom = keyboardHeight
-//        }
-//
-//        keyboardMan.animateWhenKeyboardDisappear = { [weak self] _ in
-//            if let bottom = self?.normalContactsTableViewContentInsetBottom {
-//                self?.contactsTableView.contentInset.bottom = bottom
-//                self?.contactsTableView.scrollIndicatorInsets.bottom = bottom
-//            }
-//        }
-
         #if DEBUG
             view.addSubview(contactsFPSLabel)
         #endif
+        
+        viewModel = ContactsViewModel()
+        
+        let dataSource = RxTableViewSectionedReloadDataSource<ContactsSection>()
+        dataSource.configureCell = { ds, tb, ip, i in
+            let cell = tb.dequeueReusableCellWithIdentifier(ContactsViewController.cellIdentifier) as! ContactsCell
+            switch ds.sectionAtIndex(ip.section).model {
+            case .Local:
+                cell.configureWithUser(i.identity)
+//                if searchControllerIsActive { // TODO: - 注意去判断这个
+//                    cell.configureForSearchWithUser(friend)
+//                } else {
+//                    cell.configureWithUser(friend)
+//                }
+            case .Online:
+                cell.configureForSearchWithUser(i.identity)
+            }
+            return cell
+        }
+//        dataSource.titleForHeaderInSection = { ds, section in // TODO: - 加一个搜索的判断，只有在搜索的时候才去显示 == searchControllerIsActive But? why?
+//            switch ds.sectionAtIndex(section).identity {
+//            case .Local:
+//                return NSLocalizedString("Friends", comment: "")
+//            case .Online:
+//                return NSLocalizedString("Users", comment: "")
+//            }
+//        }
+        
+        viewModel.friends.asObservable()
+            .map { $0.map { $0 } }
+            .map { [ContactsSection(model: .Local, items: $0)] }
+            .bindTo(contactsTableView.rx_itemsWithDataSource(dataSource))
+            .addDisposableTo(rx_disposeBag)
+        
+        /// 超过一定人数才显示搜索框， 另一种设置是 friends.count > Ruler.iPhoneVertical(6, 8, 10, 12).value
+        viewModel.friends.asObservable()
+            .map { !$0.isEmpty }.subscribeNext { [unowned self] isNotEmpty in
+                if isNotEmpty {
+                    let searchController = UISearchController(searchResultsController: nil)
+                    searchController.delegate = self
+                
+                    searchController.searchResultsUpdater = self
+                    searchController.dimsBackgroundDuringPresentation = false
+                
+                    searchController.searchBar.backgroundColor = UIColor.whiteColor()
+                    searchController.searchBar.barTintColor = UIColor.whiteColor()
+                    searchController.searchBar.searchBarStyle = .Minimal
+                    searchController.searchBar.placeholder = NSLocalizedString("Search Friend", comment: "")
+                    searchController.searchBar.sizeToFit()
+                
+                    searchController.searchBar.delegate = self
+                
+                    self.contactsTableView.tableHeaderView = searchController.searchBar
+                
+                    self.searchController = searchController
+                
+                    // ref http://stackoverflow.com/questions/30937275/uisearchcontroller-doesnt-hide-view-when-pushed
+                    //self.definesPresentationContext = true
+                
+                    //contactsTableView.contentOffset.y = CGRectGetHeight(searchController.searchBar.frame)
+                }
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        contactsTableView.rx_modelItemSelected(IdentifiableValue<User>)
+            .subscribeNext { [unowned self] tb, i ,ip in
+                switch ip.section {
+                case Section.Local.rawValue:
+                    self.searchController?.active = false
+                    self.yep_performSegueWithIdentifier("showProfile", sender: Box(i.identity))
+                case Section.Online.rawValue:
+                    println("WARING")
+//                    let discoveredUser = searchedUsers[indexPath.row] // Todo
+//                    searchController?.active = false
+//                    performSegueWithIdentifier("showProfile", sender: Box<DiscoveredUser>(discoveredUser))
+                default: break
+                }
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        /// 点击跳转到添加朋友
+        addFriendBarButton.rx_tap
+            .subscribeNext { [unowned self] in
+                self.performSegueWithIdentifier("showAddFriends", sender: nil)
+            }
+            .addDisposableTo(rx_disposeBag)
     }
 
     override func viewDidAppear(animated: Bool) {
@@ -199,67 +254,49 @@ class ContactsViewController: BaseViewController {
         }
     }
 
-    @IBAction private func showAddFriends(sender: UIBarButtonItem) {
-        performSegueWithIdentifier("showAddFriends", sender: nil)
-    }
-
     // MARK: Navigation
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        
+        // TODO: - 处理
+//        else if let discoveredUser = (sender as? Box<DiscoveredUser>)?.value {
+//            vc.profileUser = .DiscoveredUserType(discoveredUser)
+//        }
 
-        guard let identifier = segue.identifier else {
-            return
-        }
-
-        switch identifier {
-
-        case "showProfile":
+        if let userBox = sender as? Box<User> where segue.identifier == "showProfile" {
             let vc = segue.destinationViewController as! ProfileViewController
-
-            if let user = sender as? User {
-                if user.userID != YepUserDefaults.userID.value {
-                    vc.profileUser = .UserType(user)
-                }
-
-            } else if let discoveredUser = (sender as? Box<DiscoveredUser>)?.value {
-                vc.profileUser = .DiscoveredUserType(discoveredUser)
+            if userBox.value.userID != YepUserDefaults.userID.value {
+                vc.profileUser = .UserType(userBox.value)
             }
-
             vc.hidesBottomBarWhenPushed = true
-            
             vc.setBackButtonWithTitle()
-
-        case "showSearchContacts":
-
+        
+        } else if segue.identifier == "showSearchContacts" {
             let vc = segue.destinationViewController as! SearchContactsViewController
             vc.originalNavigationControllerDelegate = navigationController?.delegate
-
+            
             vc.hidesBottomBarWhenPushed = true
-
+            
             // 在自定义 push 之前，记录原始的 NavigationControllerDelegate 以便 pop 后恢复
             originalNavigationControllerDelegate = navigationController?.delegate
-
+            
             navigationController?.delegate = contactsSearchTransition
-
-        default:
-            break
+            
+            vc.viewModel = viewModel
         }
     }
 }
 
-// MARK: - UITableViewDataSource, UITableViewDelegate
+// MARK: - UITableViewDelegate
 
-extension ContactsViewController: UITableViewDataSource, UITableViewDelegate {
+extension ContactsViewController: UITableViewDelegate {
 
     enum Section: Int {
         case Local
         case Online
     }
 
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 2
-    }
-
+    /// TODO: - 留意这个
     private func numberOfRowsInSection(section: Int) -> Int {
         guard let section = Section(rawValue: section) else {
             return 0
@@ -272,78 +309,14 @@ extension ContactsViewController: UITableViewDataSource, UITableViewDelegate {
             return searchControllerIsActive ? searchedUsers.count : 0
         }
     }
-
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return numberOfRowsInSection(section)
-    }
-
-    func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-
-        guard numberOfRowsInSection(section) > 0 else {
-            return nil
-        }
-
-        if searchControllerIsActive {
-
-            guard let section = Section(rawValue: section) else {
-                return nil
-            }
-
-            switch section {
-            case .Local:
-                return NSLocalizedString("Friends", comment: "")
-            case .Online:
-                return NSLocalizedString("Users", comment: "")
-            }
-
-        } else {
-            return nil
-        }
-    }
-
+    /// TODO: - 同样留意这个
     private func friendAtIndexPath(indexPath: NSIndexPath) -> User? {
         let index = indexPath.row
         let friend = searchControllerIsActive ? filteredFriends?[safe: index] : friends[safe: index]
         return friend
     }
 
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-
-        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier) as! ContactsCell
-        return cell
-    }
-
-    func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
-
-        guard let cell = cell as? ContactsCell else {
-            return
-        }
-
-        guard let section = Section(rawValue: indexPath.section) else {
-            return
-        }
-
-        switch section {
-
-        case .Local:
-
-            guard let friend = friendAtIndexPath(indexPath) else {
-                return
-            }
-
-            if searchControllerIsActive {
-                cell.configureForSearchWithUser(friend)
-            } else {
-                cell.configureWithUser(friend)
-            }
-
-        case .Online:
-            
-            let discoveredUser = searchedUsers[indexPath.row]
-            cell.configureForSearchWithDiscoveredUser(discoveredUser)
-        }
-    }
-
+    /// TODO: - 同样留意这个
     func tableView(tableView: UITableView, didEndDisplayingCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
 
         guard let cell = cell as? ContactsCell else {

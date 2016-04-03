@@ -1403,6 +1403,19 @@ func discoverUsersWithSkill(skillID: String, ofSkillSet skillSet: SkillSet, inPa
     apiRequest({_ in}, baseURL: yepBaseURL, resource: resource, failure: failureHandler, completion: completion)
 }
 
+func rx_searchUsersByQ(q: String) -> Driver<RxYepResult<[DiscoveredUser]>> {
+    
+    let requestParameters = [
+        "q": q
+    ]
+    
+    let parse = parseDiscoveredUsers
+    
+    let resource = authJsonResource(path: "/v1/users/search", method: .GET, requestParameters: requestParameters, parse: parse)
+    
+    return rx_apiRequest({_ in}, baseURL: yepBaseURL, resource: resource)
+}
+
 func searchUsersByQ(q: String, failureHandler: FailureHandler?, completion: [DiscoveredUser] -> Void) {
 
     let requestParameters = [
@@ -2263,7 +2276,7 @@ func sendLocationWithLocationInfo(locationInfo: PickLocationViewController.Locat
 let afterCreatedMessageSoundEffect: YepSoundEffect = YepSoundEffect(soundName: "bub3")
 
 func createAndSendMessageWithMediaType(mediaType: MessageMediaType, inFilePath filePath: String?, orFileData fileData: NSData?, metaData: String?, fillMoreInfo: (JSONDictionary -> JSONDictionary)?, toRecipient recipientID: String, recipientType: String, afterCreatedMessage: (Message) -> Void, failureHandler: FailureHandler?, completion: (success: Bool) -> Void) {
-    // 因为 message_id 必须来自远端，线程无法切换，所以这里暂时没用 realmQueue // TOOD: 也许有办法
+    // 因为 message_id 必须来自远端，线程无法切换，所以这里暂时没用 realmQueue // TODO: 也许有办法
 
     guard let realm = try? Realm() else {
         return

@@ -9,6 +9,31 @@
 import UIKit
 import RealmSwift
 import KeyboardMan
+import RxSwift
+import RxCocoa
+import RxDataSources
+import RxOptional
+import NSObject_Rx
+
+enum RxSection: Hashable {
+    case Local(User)
+    case Online(DiscoveredUser)
+    
+    var hashValue: Int {
+        switch self {
+        case .Local(let user):
+            return user.hashValue
+        case .Online(let user):
+            return user.hashValue
+        }
+    }
+}
+
+func ==(lhs: RxSection, rhs: RxSection) -> Bool {
+    return lhs == rhs
+}
+
+private typealias ContactsSection = AnimatableSectionModel<String, RxSection> // TODO: 事实上我们可以把 Section 这个 enum 放在 item
 
 class SearchContactsViewController: SegueViewController {
 
@@ -27,8 +52,8 @@ class SearchContactsViewController: SegueViewController {
             contactsTableView.separatorColor = UIColor.yepCellSeparatorColor()
             contactsTableView.separatorInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
 
-            contactsTableView.registerClass(TableSectionTitleView.self, forHeaderFooterViewReuseIdentifier: headerIdentifier)
-            contactsTableView.registerNib(UINib(nibName: cellIdentifier, bundle: nil), forCellReuseIdentifier: cellIdentifier)
+            contactsTableView.registerClass(TableSectionTitleView.self, forHeaderFooterViewReuseIdentifier: SearchContactsViewController.headerIdentifier)
+            contactsTableView.registerNib(UINib(nibName: SearchContactsViewController.cellIdentifier, bundle: nil), forCellReuseIdentifier: SearchContactsViewController.cellIdentifier)
             contactsTableView.rowHeight = 80
             contactsTableView.tableFooterView = UIView()
         }
@@ -36,24 +61,15 @@ class SearchContactsViewController: SegueViewController {
 
     private let keyboardMan = KeyboardMan()
 
-    private lazy var friends = normalFriends()
-    private var filteredFriends: Results<User>?
-
-    private var searchedUsers = [DiscoveredUser]()
-
     private var searchControllerIsActive = false
 
-    private let headerIdentifier = "TableSectionTitleView"
-    private let cellIdentifier = "SearchedContactsCell"
+    private static let headerIdentifier = "TableSectionTitleView"
+    private static let cellIdentifier = "SearchedContactsCell"
+    /// 和 ContactsViewController 共用一个 ViewModel 用 "!"
+    weak var viewModel: ContactsViewModel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
 
         title = "Search Contacts"
 
@@ -66,6 +82,66 @@ class SearchContactsViewController: SegueViewController {
             self?.contactsTableView.contentInset.bottom = 0
             self?.contactsTableView.scrollIndicatorInsets.bottom = 0
         }
+        
+        searchBar.rx_text.asDriver()
+            .debounce(0.3)
+            .drive(viewModel.searchText)
+            .addDisposableTo(self.rx_disposeBag)
+        
+        searchBar.rx_text.asDriver()
+            .map { $0.isNotEmpty }
+            .driveNext { [unowned self] in
+                self.searchControllerIsActive = $0
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        let dataSource = RxTableViewSectionedReloadDataSource<ContactsSection>()
+        dataSource.configureCell = { _, tb, ip, i in
+            let cell = tb.dequeueReusableCellWithIdentifier(SearchContactsViewController.cellIdentifier) as! SearchedContactsCell
+            switch i.identity {
+            case .Local(let user):
+                cell.configureWithUser(user)
+            case .Online(let user):
+                cell.configureWithDiscoveredUser(user)
+            }
+            return cell
+        }
+        
+        Observable.combineLatest(viewModel.filteredFriends.asObservable().filterNil(), viewModel.searchedUsers.asObservable()) { filteredFriends, searchedUsers -> [ContactsSection] in // 过滤的最佳时机
+            
+            guard searchedUsers.isNotEmpty else {
+                let filteredFriends = filteredFriends.map { RxSection.Local($0) }
+                return [ContactsSection(model: NSLocalizedString("Friends", comment: ""), items: filteredFriends)]
+            }
+            
+            let filterSearchedUsers = searchedUsers
+                .filter { searchedUser in
+                    return !filteredFriends.contains { $0.userID == searchedUser.id }
+                }
+                .map { RxSection.Online($0) }
+            let filteredFriends = filteredFriends.map { RxSection.Local($0) }
+            
+            return [ContactsSection(model: NSLocalizedString("Friends", comment: ""), items: filteredFriends),
+                ContactsSection(model: NSLocalizedString("Users", comment: ""), items: filterSearchedUsers)]
+            }
+            .bindTo(contactsTableView.rx_itemsWithDataSource(dataSource))
+            .addDisposableTo(rx_disposeBag)
+        
+        contactsTableView.rx_modelItemSelected(IdentifiableValue<RxSection>)
+            .subscribeNext { [unowned self] tb, i, ip in
+                self.hideKeyboard()
+                switch i.identity {
+                case .Local(let user):
+                    self.performSegueWithIdentifier("showProfile", sender: Box(user))
+                case .Online(let user):
+                    self.performSegueWithIdentifier("showProfile", sender: Box(user))
+                }
+                tb.deselectRowAtIndexPath(ip, animated: true)
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        contactsTableView.rx_setDelegate(self)
+        
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -110,37 +186,32 @@ class SearchContactsViewController: SegueViewController {
     // MARK: - Navigation
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-
-        guard let identifier = segue.identifier else {
-            return
-        }
-
-        switch identifier {
-
-        case "showProfile":
+        
+        if let userBox = sender as? Box<User> where segue.identifier == "showProfile" {
             let vc = segue.destinationViewController as! ProfileViewController
-
-            if let user = sender as? User {
-                if user.userID != YepUserDefaults.userID.value {
-                    vc.profileUser = .UserType(user)
-                }
-
-            } else if let discoveredUser = (sender as? Box<DiscoveredUser>)?.value {
-                vc.profileUser = .DiscoveredUserType(discoveredUser)
+            if userBox.value.userID != YepUserDefaults.userID.value {
+                vc.profileUser = .UserType(userBox.value)
             }
-
             vc.hidesBottomBarWhenPushed = true
-            
             vc.setBackButtonWithTitle()
-
+            
             // 记录原始的 contactsSearchTransition 以便 pop 后恢复
             contactsSearchTransition = navigationController?.delegate as? ContactsSearchTransition
-
+            
             navigationController?.delegate = originalNavigationControllerDelegate
-
-        default:
-            break
+            
+        } else if let discoveredUserBox = sender as? Box<DiscoveredUser> where segue.identifier == "showProfile" {
+            let vc = segue.destinationViewController as! ProfileViewController
+            vc.profileUser = .DiscoveredUserType(discoveredUserBox.value)
+            vc.hidesBottomBarWhenPushed = true
+            vc.setBackButtonWithTitle()
+            
+            // 记录原始的 contactsSearchTransition 以便 pop 后恢复
+            contactsSearchTransition = navigationController?.delegate as? ContactsSearchTransition
+            
+            navigationController?.delegate = originalNavigationControllerDelegate
         }
+        
     }
 }
 
@@ -153,16 +224,9 @@ extension SearchContactsViewController: UISearchBarDelegate {
         searchBar.text = nil
         searchBar.resignFirstResponder()
 
-        (tabBarController as? YepTabBarController)?.setTabBarHidden(false, animated: true)
+//        (tabBarController as? YepTabBarController)?.setTabBarHidden(false, animated: true)
 
         navigationController?.popViewControllerAnimated(true)
-    }
-
-    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
-
-        searchControllerIsActive = !searchText.isEmpty
-
-        updateSearchResultsWithText(searchText)
     }
 
     func searchBarSearchButtonClicked(searchBar: UISearchBar) {
@@ -170,206 +234,38 @@ extension SearchContactsViewController: UISearchBarDelegate {
         hideKeyboard()
     }
 
-    private func updateSearchResultsWithText(searchText: String) {
-
-        let predicate = NSPredicate(format: "nickname CONTAINS[c] %@ OR username CONTAINS[c] %@", searchText, searchText)
-        let filteredFriends = friends.filter(predicate)
-        self.filteredFriends = filteredFriends
-
-        updateContactsTableView(scrollsToTop: !filteredFriends.isEmpty)
-
-        searchUsersByQ(searchText, failureHandler: nil, completion: { [weak self] users in
-
-            //println("searchUsersByQ users: \(users)")
-
-            dispatch_async(dispatch_get_main_queue()) {
-
-                guard let filteredFriends = self?.filteredFriends else {
-                    return
-                }
-
-                // 剔除 filteredFriends 里已有的
-
-                var searchedUsers = [DiscoveredUser]()
-
-                let filteredFriendUserIDSet = Set<String>(filteredFriends.map({ $0.userID }))
-
-                for user in users {
-                    if !filteredFriendUserIDSet.contains(user.id) {
-                        searchedUsers.append(user)
-                    }
-                }
-
-                self?.searchedUsers = searchedUsers
-                
-                self?.updateContactsTableView()
-            }
-        })
-    }
 }
 
-// MARK: - UITableViewDataSource, UITableViewDelegate
+// MARK: -  UITableViewDelegate
 
-extension SearchContactsViewController: UITableViewDataSource, UITableViewDelegate {
+extension SearchContactsViewController: UIScrollViewDelegate {
 
-    enum Section: Int {
-        case Local
-        case Online
-    }
-
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 2
-    }
-
-    private func numberOfRowsInSection(section: Int) -> Int {
-        guard let section = Section(rawValue: section) else {
-            return 0
-        }
-
+    func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? { // 然而这里又和 AnimatableSectionModel 不搭配，可以考虑整两个 enum 哈
+        
+        guard searchControllerIsActive else { return nil }
+        
+        let header = tableView.dequeueReusableHeaderFooterViewWithIdentifier(SearchContactsViewController.headerIdentifier) as? TableSectionTitleView
+        
         switch section {
-        case .Local:
-            return searchControllerIsActive ? (filteredFriends?.count ?? 0) : friends.count
-        case .Online:
-            return searchControllerIsActive ? searchedUsers.count : 0
+        case 0:
+            header?.titleLabel.text = NSLocalizedString("Friends", comment: "")
+        case 1:
+            header?.titleLabel.text = NSLocalizedString("Users", comment: "")
+        default:
+            break
         }
-    }
-
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return numberOfRowsInSection(section)
-    }
-
-    /*
-    func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-
-        guard numberOfRowsInSection(section) > 0 else {
-            return nil
-        }
-
-        if searchControllerIsActive {
-
-            guard let section = Section(rawValue: section) else {
-                return nil
-            }
-
-            switch section {
-            case .Local:
-                return NSLocalizedString("Friends", comment: "")
-            case .Online:
-                return NSLocalizedString("Users", comment: "")
-            }
-
-        } else {
-            return nil
-        }
-    }
-    */
-
-    func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-
-        guard numberOfRowsInSection(section) > 0 else {
-            return nil
-        }
-
-        if searchControllerIsActive {
-
-            guard let section = Section(rawValue: section) else {
-                return nil
-            }
-
-            let header = tableView.dequeueReusableHeaderFooterViewWithIdentifier(headerIdentifier) as? TableSectionTitleView
-
-            switch section {
-            case .Local:
-                header?.titleLabel.text = NSLocalizedString("Friends", comment: "")
-            case .Online:
-                header?.titleLabel.text = NSLocalizedString("Users", comment: "")
-            }
-
-            return header
-
-        } else {
-            return nil
-        }
+        
+        return header
+        
     }
 
     func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-
-        guard numberOfRowsInSection(section) > 0 else {
-            return 0
+        
+        switch searchControllerIsActive {
+        case true: return 25
+        case false: return 0
         }
 
-        if searchControllerIsActive {
-            return 25
-            
-        } else {
-            return 0
-        }
     }
 
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier) as! SearchedContactsCell
-        return cell
-    }
-
-    private func friendAtIndexPath(indexPath: NSIndexPath) -> User? {
-        let index = indexPath.row
-        let friend = searchControllerIsActive ? filteredFriends?[safe: index] : friends[safe: index]
-        return friend
-    }
-
-    func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
-
-        guard let cell = cell as? SearchedContactsCell else {
-            return
-        }
-
-        guard let section = Section(rawValue: indexPath.section) else {
-            return
-        }
-
-
-        switch section {
-
-        case .Local:
-
-            guard let friend = friendAtIndexPath(indexPath) else {
-                return
-            }
-
-            cell.configureWithUser(friend)
-
-        case .Online:
-
-            let discoveredUser = searchedUsers[indexPath.row]
-            cell.configureWithDiscoveredUser(discoveredUser)
-        }
-    }
-
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-
-        defer {
-            tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        }
-
-        hideKeyboard()
-
-        guard let section = Section(rawValue: indexPath.section) else {
-            return
-        }
-
-        switch section {
-
-        case .Local:
-
-            if let friend = friendAtIndexPath(indexPath) {
-                performSegueWithIdentifier("showProfile", sender: friend)
-            }
-
-        case .Online:
-
-            let discoveredUser = searchedUsers[indexPath.row]
-            performSegueWithIdentifier("showProfile", sender: Box<DiscoveredUser>(discoveredUser))
-        }
-    }
 }
-

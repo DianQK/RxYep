@@ -7,12 +7,14 @@
 //
 
 import RxSwift
+import RxCocoa
 
 public enum TScheduler {
     case Main
     case Serial(DispatchQueueSchedulerQOS)
     case Concurrent(DispatchQueueSchedulerQOS)
     case Operation(NSOperationQueue)
+    case Realm
     
     
     public func scheduler() -> ImmediateSchedulerType {
@@ -25,6 +27,8 @@ public enum TScheduler {
             return ConcurrentDispatchQueueScheduler(globalConcurrentQueueQOS: QOS)
         case .Operation(let queue):
             return OperationQueueScheduler(operationQueue: queue)
+        case .Realm:
+            return SerialDispatchQueueScheduler(internalSerialQueueName: "com.RxYep.realmQueue")
         }
     }
 }

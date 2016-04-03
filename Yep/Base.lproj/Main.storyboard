@@ -80,10 +80,6 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <color key="separatorColor" red="0.93725490196078431" green="0.93725490196078431" blue="0.95686274509803926" alpha="1" colorSpace="calibratedRGB"/>
                                 <inset key="separatorInset" minX="90" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                <connections>
-                                    <outlet property="dataSource" destination="fFS-0m-aok" id="XAO-GY-Ww5"/>
-                                    <outlet property="delegate" destination="fFS-0m-aok" id="clT-kA-HUJ"/>
-                                </connections>
                             </tableView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="G4u-1I-leN">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="20"/>
@@ -105,13 +101,10 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Contacts" id="tYK-ax-VkQ">
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="JGC-Ux-Jad">
-                            <connections>
-                                <action selector="showAddFriends:" destination="fFS-0m-aok" id="SMA-th-NMF"/>
-                            </connections>
-                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="JGC-Ux-Jad"/>
                     </navigationItem>
                     <connections>
+                        <outlet property="addFriendBarButton" destination="JGC-Ux-Jad" id="Z8V-1V-b1g"/>
                         <outlet property="contactsTableView" destination="3hF-wd-yhY" id="RfM-bD-4Oe"/>
                         <outlet property="coverUnderStatusBarView" destination="G4u-1I-leN" id="mZf-ea-d2Y"/>
                         <segue destination="AZ0-Fw-rwa" kind="show" identifier="showAddFriends" id="sGo-49-lo9"/>
