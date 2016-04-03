@@ -112,7 +112,7 @@ class ContactsViewController: UIViewController, NavigationBarAutoShowable {
             
             self?.updateContactsTableView()
         }
-
+        // TODO: - 更改成 Rx
         YepUserDefaults.nickname.bindListener(Listener.Nickname) { [weak self] _ in // 两个绑定监听
             dispatch_async(dispatch_get_main_queue()) {
                 self?.updateContactsTableView()
