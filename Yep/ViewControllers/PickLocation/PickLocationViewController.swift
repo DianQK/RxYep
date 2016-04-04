@@ -9,6 +9,11 @@
 import UIKit
 import MapKit
 import Proposer
+import RxSwift
+import RxCocoa
+import RxDataSources
+import RxOptional
+import NSObject_Rx
 
 class PickLocationViewController: SegueViewController {
 
@@ -32,10 +37,11 @@ class PickLocationViewController: SegueViewController {
     @IBOutlet private weak var searchBar: UISearchBar!
     @IBOutlet private weak var searchBarTopToSuperBottomConstraint: NSLayoutConstraint!
     @IBOutlet private weak var tableView: UITableView!
-    @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
+    @IBOutlet private weak var activityIndicator: UIActivityIndicatorView! // 其状态不应该去和 ViewModel 相关 == ViewModel 初始化就是获得了位置，此时已经 stop
 
     private var isFirstShowUserLocation = true
-
+    
+    /// 不知所措，看样子目前显示这个
     private var searchedMapItems = [MKMapItem]() {
         didSet {
             reloadTableView()
@@ -43,7 +49,8 @@ class PickLocationViewController: SegueViewController {
     }
 
     private lazy var geocoder = CLGeocoder()
-
+    
+    /// 不知所措
     private var userLocationPlacemarks = [CLPlacemark]() {
         didSet {
             if let placemark = userLocationPlacemarks.first {
@@ -59,7 +66,7 @@ class PickLocationViewController: SegueViewController {
             reloadTableView()
         }
     }
-
+    /// 滑动 MapKit 后变的地址列表
     private var pickedLocationPlacemarks = [CLPlacemark]() {
         didSet {
             if let placemark = pickedLocationPlacemarks.first {
@@ -75,7 +82,7 @@ class PickLocationViewController: SegueViewController {
             reloadTableView()
         }
     }
-
+    /// 不知所措，还有这个也显示，似乎是网络请求返回的
     private var foursquareVenues = [FoursquareVenue]() {
         didSet {
             reloadTableView()
@@ -160,9 +167,9 @@ class PickLocationViewController: SegueViewController {
                 self?.userLocationPlacemarks = placemarks.filter({ $0.name != nil })
             }
 
-            foursquareVenuesNearby(coordinate: location.coordinate, failureHandler: nil, completion: { [weak self] venues in
+            foursquareVenuesNearby(coordinate: location.coordinate, failureHandler: nil, completion: { [weak self] venues in // 这是个网络请求 ==
                 self?.foursquareVenues = venues
-            })
+            }) // 附近的地址 == ？
 
         } else {
             proposeToAccess(.Location(.WhenInUse), agreed: {
@@ -347,7 +354,7 @@ extension PickLocationViewController: MKMapViewDelegate {
 
         activityIndicator.stopAnimating()
 
-        if isFirstShowUserLocation {
+        if isFirstShowUserLocation { // 只显示一次？用 take(1)
             isFirstShowUserLocation = false
 
             doneButton.enabled = true
@@ -370,7 +377,7 @@ extension PickLocationViewController: MKMapViewDelegate {
                 self?.foursquareVenues = venues
             })
 
-            mapView.showsUserLocation = false
+            mapView.showsUserLocation = false // 这个是？什么 ==，不显示就直接显示自己选的
         }
     }
 
@@ -431,9 +438,9 @@ extension PickLocationViewController: UISearchBarDelegate {
             self.searchBarTopToSuperBottomConstraint.constant = 250
             self.view.layoutIfNeeded()
 
-        }, completion: { finished in
+        }) { finished in
             self.searchBar.setShowsCancelButton(false, animated: true)
-        })
+        }
     }
 
     func searchBarSearchButtonClicked(searchBar: UISearchBar) {
@@ -442,11 +449,12 @@ extension PickLocationViewController: UISearchBarDelegate {
             return
         }
 
-        searchPlacesByName(name)
+        searchPlacesByName(name) // ViewModel
 
-        shrinkSearchLocationView()
+        shrinkSearchLocationView() // 不是 ViewModel 的事情
     }
-
+    
+    // 已经放入 ViewModel
     private func searchPlacesByName(name: String, needAppend: Bool = false) {
 
         let request = MKLocalSearchRequest()
@@ -457,7 +465,7 @@ extension PickLocationViewController: UISearchBarDelegate {
         }
 
         let search = MKLocalSearch(request: request)
-
+        
         search.startWithCompletionHandler { [weak self] response, error in
             if error == nil {
                 if let mapItems = response?.mapItems {
@@ -537,7 +545,7 @@ extension PickLocationViewController: UITableViewDataSource, UITableViewDelegate
 
             cell.checkImageView.hidden = true
 
-        case Section.SearchedLocation.rawValue:
+        case Section.SearchedLocation.rawValue: // 这个
             cell.iconImageView.hidden = false
             cell.iconImageView.image = UIImage(named: "icon_pin")
 
@@ -546,7 +554,7 @@ extension PickLocationViewController: UITableViewDataSource, UITableViewDelegate
 
             cell.checkImageView.hidden = true
 
-        case Section.FoursquareVenue.rawValue:
+        case Section.FoursquareVenue.rawValue: // 这个，第一次加载？ == 好像都是这个
             cell.iconImageView.hidden = false
             cell.iconImageView.image = UIImage(named: "icon_pin")
 

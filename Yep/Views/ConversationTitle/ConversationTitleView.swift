@@ -48,18 +48,19 @@ class ConversationTitleView: UIView {
             "nameLabel": nameLabel,
             "stateInfoLabel": stateInfoLabel,
             "helperView": helperView,
-        ]
+            ]
         
-        helperView.centerXAnchor.constraintEqualToAnchor(centerXAnchor).active = true
-        helperView.centerYAnchor.constraintEqualToAnchor(centerXAnchor).active = true
-        helperView.topAnchor.constraintEqualToAnchor(nameLabel.topAnchor).active = true
-        helperView.bottomAnchor.constraintEqualToAnchor(stateInfoLabel.bottomAnchor).active = true
+        let helperViewCenterX = NSLayoutConstraint(item: helperView, attribute: .CenterX, relatedBy: .Equal, toItem: self, attribute: .CenterX, multiplier: 1, constant: 0)
+        let helperViewCenterY = NSLayoutConstraint(item: helperView, attribute: .CenterY, relatedBy: .Equal, toItem: self, attribute: .CenterY, multiplier: 1, constant: 0)
+        let helperViewTop = NSLayoutConstraint(item: helperView, attribute: .Top, relatedBy: .Equal, toItem: nameLabel, attribute: .Top, multiplier: 1, constant: 0)
+        let helperViewBottom = NSLayoutConstraint(item: helperView, attribute: .Bottom, relatedBy: .Equal, toItem: stateInfoLabel, attribute: .Bottom, multiplier: 1, constant: 0)
         
-
+        NSLayoutConstraint.activateConstraints([helperViewCenterX, helperViewCenterY, helperViewTop, helperViewBottom])
+        
         let constraintsV = NSLayoutConstraint.constraintsWithVisualFormat("V:[nameLabel(24)][stateInfoLabel(12)]", options: [.AlignAllCenterX, .AlignAllLeading, .AlignAllTrailing], metrics: nil, views: viewsDictionary)
-
+        
         let constraintsH = NSLayoutConstraint.constraintsWithVisualFormat("H:|[nameLabel]|", options: [], metrics: nil, views: viewsDictionary)
-
+        
         NSLayoutConstraint.activateConstraints(constraintsV)
         NSLayoutConstraint.activateConstraints(constraintsH)
     }

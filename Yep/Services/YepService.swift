@@ -3534,6 +3534,53 @@ struct FoursquareVenue {
     }
 }
 
+func rx_foursquareVenuesNearby(coordinate coordinate: CLLocationCoordinate2D) -> Driver<RxYepResult<[FoursquareVenue]>> {
+    
+    let dateFormatter = NSDateFormatter()
+    dateFormatter.dateFormat = "yyyyMMdd"
+    let dateString = dateFormatter.stringFromDate(NSDate())
+    
+    let requestParameters = [
+        "client_id": "NFMF2UV2X5BCADG2T5FE3BIORDPEDJA5JZVDWF0XXAZUX2AS",
+        "client_secret": "UOGE0SCBWHV2JFXD5AFAIHOVTUSBQ3ERH4ALHU3WU3BSR4CN",
+        "v": dateString,
+        "ll": "\(coordinate.latitude),\(coordinate.longitude)"
+    ]
+    
+    let parse: JSONDictionary -> [FoursquareVenue]? = { data in
+        //println("foursquarePlacesNearby: \(data)")
+        
+        if let
+            response = data["response"] as? JSONDictionary,
+            venuesData = response["venues"] as? [JSONDictionary] {
+            
+            var venues = [FoursquareVenue]()
+            
+            for venueInfo in venuesData {
+                if let
+                    name = venueInfo["name"] as? String,
+                    locationInfo = venueInfo["location"] as? JSONDictionary,
+                    latitude = locationInfo["lat"] as? CLLocationDegrees,
+                    longitude = locationInfo["lng"] as? CLLocationDegrees {
+                    let venue = FoursquareVenue(name: name, latitude: latitude, longitude: longitude)
+                    venues.append(venue)
+                }
+            }
+            
+            return venues
+        }
+        
+        return []
+    }
+    
+    let resource = jsonResource(path: "/v2/venues/search", method: .GET, requestParameters: requestParameters, parse: parse)
+    
+    let foursquareBaseURL = NSURL(string: "https://api.foursquare.com")!
+    
+    return rx_apiRequest({_ in}, baseURL: foursquareBaseURL, resource: resource)
+
+}
+
 func foursquareVenuesNearby(coordinate coordinate: CLLocationCoordinate2D, failureHandler: FailureHandler?, completion: [FoursquareVenue] -> Void) {
 
     let dateFormatter = NSDateFormatter()

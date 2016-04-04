@@ -28,6 +28,7 @@ def pods
     pod 'RxDataSources', '~>0.6'
     pod 'NSObject+Rx', '~>1.2'
     pod 'RxOptional', '~>2.0'
+    pod 'RxMKMapView'
 end
 
 target 'Yep' do
