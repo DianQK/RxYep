@@ -29,6 +29,7 @@ def pods
     pod 'NSObject+Rx', '~>1.2'
     pod 'RxOptional', '~>2.0'
     pod 'RxMKMapView'
+    pod 'RxGesture', :git => 'https://github.com/RxSwiftCommunity/RxGesture.git'
 end
 
 target 'Yep' do

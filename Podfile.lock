@@ -27,6 +27,8 @@ PODS:
   - RxDataSources (0.6.2):
     - RxCocoa (~> 2.2)
     - RxSwift (~> 2.2)
+  - RxGesture (0.1.6):
+    - RxCocoa (~> 2.3.1)
   - RxMKMapView (2.0.3):
     - RxCocoa (~> 2.3.1)
     - RxSwift (~> 2.3.1)
@@ -56,11 +58,21 @@ DEPENDENCIES:
   - Ruler
   - RxCocoa (~> 2.3)
   - RxDataSources (~> 0.6)
+  - RxGesture (from `https://github.com/RxSwiftCommunity/RxGesture.git`)
   - RxMKMapView
   - RxOptional (~> 2.0)
   - RxSwift (~> 2.3)
   - SocketRocket
   - TPKeyboardAvoiding
+
+EXTERNAL SOURCES:
+  RxGesture:
+    :git: https://github.com/RxSwiftCommunity/RxGesture.git
+
+CHECKOUT OPTIONS:
+  RxGesture:
+    :commit: 667b64ef05eeb39c12a1193fb05b20448709431e
+    :git: https://github.com/RxSwiftCommunity/RxGesture.git
 
 SPEC CHECKSUMS:
   1PasswordExtension: 627d5aecf210c7636968faf5a4c3546c9531385b
@@ -82,12 +94,13 @@ SPEC CHECKSUMS:
   Ruler: b36ec3bbc5fc6c3b7f629a6052cc1c17ada4b280
   RxCocoa: a2baaf3462b989559a51dce59d78fbebb8fe0afa
   RxDataSources: 9ae26211019e6afb7391125940d719b4326e94a4
+  RxGesture: da19da595b5fcfb27488c878475e77cf085e35aa
   RxMKMapView: fb2af0ee92a7cb7cbcf54262db571ccf957086bb
   RxOptional: b77fb47a0190213cf8a37c7a2b7fda28160b4563
   RxSwift: 829b2843e9eddc77a02cb3f5117f0d55f8f646f1
   SocketRocket: 2c51efccd2d73c99a923407ca4b06e7e9da95dbf
   TPKeyboardAvoiding: e5ce146b313de063957bfa75a13f1e9b0ff18ab7
 
-PODFILE CHECKSUM: a0a02d6a8d9385e087d0f876e14e3eb40b3d0516
+PODFILE CHECKSUM: acc7d073fec3f91cf56e80e0fcddf1ad8d7f7f9f
 
 COCOAPODS: 1.0.0.beta.4

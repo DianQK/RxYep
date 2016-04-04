@@ -14,8 +14,9 @@ import RxCocoa
 import RxDataSources
 import RxOptional
 import NSObject_Rx
+import RxGesture
 
-class PickLocationViewController: SegueViewController {
+class PickLocationViewController: UIViewController {
 
     enum Purpose {
         case Message
@@ -39,54 +40,18 @@ class PickLocationViewController: SegueViewController {
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView! // 其状态不应该去和 ViewModel 相关 == ViewModel 初始化就是获得了位置，此时已经 stop
 
-    private var isFirstShowUserLocation = true
-    
-    /// 不知所措，看样子目前显示这个
-    private var searchedMapItems = [MKMapItem]() {
-        didSet {
-            reloadTableView()
-        }
-    }
+    private var viewModel: PickLocationViewModel!
 
     private lazy var geocoder = CLGeocoder()
     
-    /// 不知所措
-    private var userLocationPlacemarks = [CLPlacemark]() {
-        didSet {
-            if let placemark = userLocationPlacemarks.first {
-                if let location = self.location {
-                    if case .Default = location {
-                        var info = location.info
-                        info.name = placemark.yep_autoName
-                        self.location = .Default(info: info)
-                    }
-                }
-            }
-
-            reloadTableView()
-        }
-    }
-    /// 滑动 MapKit 后变的地址列表
-    private var pickedLocationPlacemarks = [CLPlacemark]() {
-        didSet {
-            if let placemark = pickedLocationPlacemarks.first {
-                if let location = self.location {
-                    if case .Picked = location {
-                        var info = location.info
-                        info.name = placemark.yep_autoName
-                        self.location = .Picked(info: info)
-                    }
-                }
-            }
-
-            reloadTableView()
-        }
-    }
-    /// 不知所措，还有这个也显示，似乎是网络请求返回的
-    private var foursquareVenues = [FoursquareVenue]() {
-        didSet {
-            reloadTableView()
-        }
+    private var userLocationPlacemarks = [CLPlacemark]()
+    
+    private enum Section {
+        //        case CurrentLocation
+        //        case UserPickedLocation
+        //        case UserLocationPlacemarks
+        case SearchedLocation(MKMapItem)
+        case Foursquare(FoursquareVenue) //删除 "Venue"
     }
 
     private let pickLocationCellIdentifier = "PickLocationCell"
@@ -155,11 +120,14 @@ class PickLocationViewController: SegueViewController {
         doneButton.enabled = false
         
         mapView.showsUserLocation = true
-        mapView.delegate = self
-
+        
+        let locationCoordinate: Driver<CLLocationCoordinate2D>
+        
         if let location = YepLocationService.sharedManager.locationManager.location {
             let region = MKCoordinateRegionMakeWithDistance(location.coordinate.yep_applyChinaLocationShift, 1000, 1000)
             mapView.setRegion(region, animated: false)
+            
+            locationCoordinate = Driver.just(location.coordinate.yep_applyChinaLocationShift)
 
             self.location = .Default(info: Location.Info(coordinate: location.coordinate.yep_applyChinaLocationShift, name: nil))
 
@@ -167,11 +135,9 @@ class PickLocationViewController: SegueViewController {
                 self?.userLocationPlacemarks = placemarks.filter({ $0.name != nil })
             }
 
-            foursquareVenuesNearby(coordinate: location.coordinate, failureHandler: nil, completion: { [weak self] venues in // 这是个网络请求 ==
-                self?.foursquareVenues = venues
-            }) // 附近的地址 == ？
-
         } else {
+            locationCoordinate = Driver.empty()
+            
             proposeToAccess(.Location(.WhenInUse), agreed: {
 
                 YepLocationService.turnOn()
@@ -187,36 +153,144 @@ class PickLocationViewController: SegueViewController {
         view.bringSubviewToFront(searchBar)
         view.bringSubviewToFront(activityIndicator)
 
-        let pan = UIPanGestureRecognizer(target: self, action: #selector(PickLocationViewController.pan(_:)))
+        let pan = UIPanGestureRecognizer()
         mapView.addGestureRecognizer(pan)
         pan.delegate = self
+        
+        /// 地理位置更新
+        let didUpdateLocation = mapView.rx_didUpdateUserLocation.asDriver().map { $0.location }.filterNil()
+        /// map 成 Coordinate
+        let didUpdateCoordinate = didUpdateLocation.map { $0.coordinate.yep_cancelChinaLocationShift }
+        /// pan 手势移动 Coordinate
+        let didMoveCoordinate = pan.rx_event.asDriver().filter { $0.state == .Ended }.map { [unowned self] _ in self.fixedCenterCoordinate.yep_cancelChinaLocationShift }
+        /// merge 以上两种情况
+        let didChangeCoordinate = [locationCoordinate, didUpdateCoordinate, didMoveCoordinate].toObservable().merge().asDriver(onErrorJustReturn: fixedCenterCoordinate.yep_cancelChinaLocationShift )
+        
+        didMoveCoordinate
+            .driveNext { [unowned self] coordinate in
+                self.location = .Picked(info: Location.Info(coordinate: coordinate, name: nil))
+                let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+                self.placemarksAroundLocation(location) { placemarks in
+                    let pickedLocationPlacemarks = placemarks.filter({ $0.name != nil })
+                    if let placemark = pickedLocationPlacemarks.first, location = self.location {
+                        if case .Picked = location {
+                            var info = location.info
+                            info.name = placemark.yep_autoName
+                            self.location = .Picked(info: info)
+                        }
+                    }
+                }
+            }
+            .addDisposableTo(rx_disposeBag)
+
+        let searchText = searchBar.rx_text.asDriver().debounce(0.3)
+        
+        viewModel = PickLocationViewModel(input: (
+            didUpdateCoordinate: didChangeCoordinate,
+            searchPlacesName: searchText))
+        
+        didUpdateLocation.asObservable().take(1)
+            .subscribeNext { [unowned self] location in
+                
+                if let realLocation = YepLocationService.sharedManager.locationManager.location { // 这部分是？
+                    let latitudeShift = location.coordinate.latitude - realLocation.coordinate.latitude
+                    let longitudeShift = location.coordinate.longitude - realLocation.coordinate.longitude
+                    YepUserDefaults.latitudeShift.value = latitudeShift
+                    YepUserDefaults.longitudeShift.value = longitudeShift
+                }
+            
+                self.activityIndicator.stopAnimating()
+            
+                self.doneButton.enabled = true
+                
+                self.mapView.showsUserLocation = false
+            
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        didChangeCoordinate // 绑定中心点，这个不需要 ViewModel 帮助
+            .driveNext { [unowned self] coordinate in
+                self.mapView.setCenterCoordinate(coordinate, animated: true)
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        let foursquareVenues = viewModel.foursquareVenues.asObservable().map { $0.map { Section.Foursquare($0) } }
+        
+        let searchedMapItems = viewModel.searchedMapItems.asObservable().map { $0.map { Section.SearchedLocation($0) } }
+        
+        [foursquareVenues, searchedMapItems].toObservable().merge()
+            .bindTo(tableView.rx_itemsWithCellIdentifier(pickLocationCellIdentifier, cellType: PickLocationCell.self)) { [unowned self] ip, i, c in
+                c.iconImageView.hidden = false
+                c.iconImageView.image = UIImage(named: "icon_pin")
+                c.checkImageView.hidden = true
+                
+                switch i {
+                case .Foursquare(let venues):
+                    c.locationLabel.text = venues.name
+                case .SearchedLocation(let mapItem):
+                    c.locationLabel.text = mapItem.placemark.name ?? "🐌" // ==
+                }
+                
+                if let pickLocationIndexPath = self.selectedLocationIndexPath {
+                    c.checkImageView.hidden = !(pickLocationIndexPath == ip)
+                }
+            }
+            .addDisposableTo(rx_disposeBag)
+        
+        tableView.rx_modelItemSelected(Section)
+            .subscribeNext { [unowned self] tb, i, ip in
+                
+                if let selectedLocationIndexPath = self.selectedLocationIndexPath {
+                    if let cell = tb.cellForRowAtIndexPath(selectedLocationIndexPath) as? PickLocationCell {
+                        cell.checkImageView.hidden = true
+                    }
+                    
+                }
+//                else {
+//                    if let cell = tb.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: Section.CurrentLocation.rawValue)) as? PickLocationCell {
+//                        cell.checkImageView.hidden = true
+//                    }
+//                }
+                
+                if let cell = tb.cellForRowAtIndexPath(ip) as? PickLocationCell {
+                    cell.checkImageView.hidden = false
+                }
+                
+                self.selectedLocationIndexPath = ip
+                
+                switch i {
+                case .Foursquare(let venue):
+                    let coordinate = venue.coordinate.yep_applyChinaLocationShift
+                    self.location = .Selected(info: Location.Info(coordinate: coordinate, name: venue.name))
+                    self.mapView.setCenterCoordinate(coordinate, animated: true) // 选择某个 Cell 时也需要切换一下 Center
+                case .SearchedLocation(let mapItem):
+                    let placemark = mapItem.placemark
+                    guard let _location = placemark.location else { break }
+                    self.location = .Selected(info: Location.Info(coordinate: _location.coordinate, name: placemark.name))
+                    self.mapView.setCenterCoordinate(_location.coordinate, animated: true)
+                }
+                
+                tb.deselectRowAtIndexPath(ip, animated: true)
+
+            }
+            .addDisposableTo(rx_disposeBag)
+        
     }
 
     // MARK: Navigation
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-
-        guard let identifier = segue.identifier else {
-            return
-        }
-
-        switch identifier {
-
-        case "showNewFeed":
-
+        
+        if let locationBox = sender as? Box<Location> where segue.identifier == "showNewFeed" {
             let vc = segue.destinationViewController as! NewFeedViewController
-
-            let location = (sender as! Box<Location>).value
-
-            vc.attachment = .Location(location)
-
+            
+            vc.attachment = .Location(locationBox.value)
+            
             vc.preparedSkill = preparedSkill
-
+            
             vc.afterCreatedFeedAction = afterCreatedFeedAction
-
-        default:
-            break
         }
+
     }
 
     // MARK: Actions
@@ -236,7 +310,7 @@ class PickLocationViewController: SegueViewController {
 
         case .Message:
 
-            dismissViewControllerAnimated(true, completion: {
+            dismissViewControllerAnimated(true) {
 
                 if let sendLocationAction = self.sendLocationAction {
 
@@ -247,40 +321,18 @@ class PickLocationViewController: SegueViewController {
                         sendLocationAction(locationInfo: Location.Info(coordinate: self.fixedCenterCoordinate, name: nil))
                     }
                 }
-            })
+            }
 
         case .Feed:
 
             if let location = location {
-                performSegueWithIdentifier("showNewFeed", sender: Box(location))
+                yep_performSegueWithIdentifier("showNewFeed", sender: Box(location))
 
             } else {
                 let _location = Location.Default(info: Location.Info(coordinate: fixedCenterCoordinate, name: userLocationPlacemarks.first?.yep_autoName))
 
-                performSegueWithIdentifier("showNewFeed", sender: Box(_location))
+                yep_performSegueWithIdentifier("showNewFeed", sender: Box(_location))
             }
-        }
-    }
-
-    @objc private func pan(sender: UIPanGestureRecognizer) {
-
-        if sender.state == .Ended {
-
-            selectedLocationIndexPath = nil
-            tableView.reloadData()
-
-            let coordinate = fixedCenterCoordinate
-
-            self.location = .Picked(info: Location.Info(coordinate: coordinate, name: nil))
-
-            let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-            placemarksAroundLocation(location) { [weak self] placemarks in
-                self?.pickedLocationPlacemarks = placemarks.filter({ $0.name != nil })
-            }
-
-            foursquareVenuesNearby(coordinate: coordinate.yep_cancelChinaLocationShift, failureHandler: nil, completion: { [weak self] venues in
-                self?.foursquareVenues = venues
-            })
         }
     }
 
@@ -308,11 +360,6 @@ class PickLocationViewController: SegueViewController {
         })
     }
 
-    private func reloadTableView() {
-        dispatch_async(dispatch_get_main_queue()) {
-            self.tableView.reloadData()
-        }
-    }
 }
 
 // MARK: - MKMapViewDelegate
@@ -328,58 +375,6 @@ extension PickLocationViewController: UIGestureRecognizerDelegate {
 // MARK: - MKMapViewDelegate
 
 extension PickLocationViewController: MKMapViewDelegate {
-    
-    func mapView(mapView: MKMapView, didUpdateUserLocation userLocation: MKUserLocation) {
-
-        guard let location = userLocation.location else {
-            return
-        }
-
-        if let realLocation = YepLocationService.sharedManager.locationManager.location {
-
-            /*
-            println("reallatitude: \(realLocation.coordinate.latitude)")
-            println("fakelatitude: \(location.coordinate.latitude)")
-            println("reallongitude: \(realLocation.coordinate.longitude)")
-            println("fakelongitude: \(location.coordinate.longitude)")
-            println("\n")
-            */
-
-            let latitudeShift = location.coordinate.latitude - realLocation.coordinate.latitude
-            let longitudeShift = location.coordinate.longitude - realLocation.coordinate.longitude
-
-            YepUserDefaults.latitudeShift.value = latitudeShift
-            YepUserDefaults.longitudeShift.value = longitudeShift
-        }
-
-        activityIndicator.stopAnimating()
-
-        if isFirstShowUserLocation { // 只显示一次？用 take(1)
-            isFirstShowUserLocation = false
-
-            doneButton.enabled = true
-
-            //let region = MKCoordinateRegionMakeWithDistance(location.coordinate, 1000, 1000)
-            //mapView.setRegion(region, animated: true)
-            mapView.setCenterCoordinate(location.coordinate, animated: true)
-
-            if let _location = self.location {
-                if case .Default = _location {
-                    self.location = .Default(info: Location.Info(coordinate: location.coordinate, name: nil))
-                }
-            }
-
-            placemarksAroundLocation(location) { [weak self] placemarks in
-                self?.userLocationPlacemarks = placemarks.filter({ $0.name != nil })
-            }
-
-            foursquareVenuesNearby(coordinate: location.coordinate.yep_cancelChinaLocationShift, failureHandler: nil, completion: { [weak self] venues in
-                self?.foursquareVenues = venues
-            })
-
-            mapView.showsUserLocation = false // 这个是？什么 ==，不显示就直接显示自己选的
-        }
-    }
 
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
 
@@ -445,192 +440,9 @@ extension PickLocationViewController: UISearchBarDelegate {
 
     func searchBarSearchButtonClicked(searchBar: UISearchBar) {
 
-        guard let name = searchBar.text else {
-            return
-        }
-
-        searchPlacesByName(name) // ViewModel
+        guard let _ = searchBar.text else { return }
 
         shrinkSearchLocationView() // 不是 ViewModel 的事情
     }
-    
-    // 已经放入 ViewModel
-    private func searchPlacesByName(name: String, needAppend: Bool = false) {
 
-        let request = MKLocalSearchRequest()
-        request.naturalLanguageQuery = name
-
-        if let location = mapView.userLocation.location {
-            request.region = MKCoordinateRegionMakeWithDistance(location.coordinate, 200000, 200000)
-        }
-
-        let search = MKLocalSearch(request: request)
-        
-        search.startWithCompletionHandler { [weak self] response, error in
-            if error == nil {
-                if let mapItems = response?.mapItems {
-
-                    let searchedMapItems = mapItems.filter({ $0.placemark.name != nil })
-
-                    if needAppend {
-                        self?.searchedMapItems += searchedMapItems
-
-                    } else {
-                        self?.searchedMapItems = searchedMapItems
-                    }
-                }
-            }
-        }
-    }
 }
-
-// MARK: - UITableViewDataSource, UITableViewDelegate
-
-extension PickLocationViewController: UITableViewDataSource, UITableViewDelegate {
-
-    private enum Section: Int {
-        case CurrentLocation = 0
-        case UserPickedLocation
-        case UserLocationPlacemarks
-        case SearchedLocation
-        case FoursquareVenue
-    }
-
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 5
-    }
-
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-
-        switch section {
-        case Section.CurrentLocation.rawValue:
-            return 0
-        case Section.UserPickedLocation.rawValue:
-            return 0
-        case Section.UserLocationPlacemarks.rawValue:
-            return 0
-        case Section.SearchedLocation.rawValue:
-            return searchedMapItems.count
-        case Section.FoursquareVenue.rawValue:
-            return foursquareVenues.count
-        default:
-            return 0
-        }
-    }
-
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(pickLocationCellIdentifier) as! PickLocationCell
-
-        switch indexPath.section {
-
-        case Section.CurrentLocation.rawValue:
-            cell.iconImageView.hidden = false
-            cell.iconImageView.image = UIImage(named: "icon_current_location")
-            cell.locationLabel.text = NSLocalizedString("My Current Location", comment: "")
-            cell.checkImageView.hidden = false
-
-        case Section.UserPickedLocation.rawValue:
-            cell.iconImageView.hidden = false
-            cell.iconImageView.image = UIImage(named: "icon_pin")
-            cell.locationLabel.text = NSLocalizedString("Picked Location", comment: "")
-            cell.checkImageView.hidden = true
-
-        case Section.UserLocationPlacemarks.rawValue:
-            cell.iconImageView.hidden = true
-            let placemark = userLocationPlacemarks[indexPath.row]
-
-            let text = placemark.name ?? "🐌"
-
-            cell.locationLabel.text = text
-
-            cell.checkImageView.hidden = true
-
-        case Section.SearchedLocation.rawValue: // 这个
-            cell.iconImageView.hidden = false
-            cell.iconImageView.image = UIImage(named: "icon_pin")
-
-            let placemark = searchedMapItems[indexPath.row].placemark
-            cell.locationLabel.text = placemark.name
-
-            cell.checkImageView.hidden = true
-
-        case Section.FoursquareVenue.rawValue: // 这个，第一次加载？ == 好像都是这个
-            cell.iconImageView.hidden = false
-            cell.iconImageView.image = UIImage(named: "icon_pin")
-
-            let foursquareVenue = foursquareVenues[indexPath.row]
-            cell.locationLabel.text = foursquareVenue.name
-
-            cell.checkImageView.hidden = true
-
-        default:
-            break
-        }
-
-        if let pickLocationIndexPath = selectedLocationIndexPath {
-            cell.checkImageView.hidden = !(pickLocationIndexPath == indexPath)
-        }
-
-        return cell
-    }
-
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-
-        defer {
-            tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        }
-
-        if let selectedLocationIndexPath = selectedLocationIndexPath {
-            if let cell = tableView.cellForRowAtIndexPath(selectedLocationIndexPath) as? PickLocationCell {
-                cell.checkImageView.hidden = true
-            }
-
-        } else {
-            if let cell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: Section.CurrentLocation.rawValue)) as? PickLocationCell {
-                cell.checkImageView.hidden = true
-            }
-        }
-
-        if let cell = tableView.cellForRowAtIndexPath(indexPath) as? PickLocationCell {
-            cell.checkImageView.hidden = false
-        }
-
-        selectedLocationIndexPath = indexPath
-
-        switch indexPath.section {
-
-        case Section.CurrentLocation.rawValue:
-            if let _location = mapView.userLocation.location {
-                location = .Selected(info: Location.Info(coordinate: _location.coordinate, name: userLocationPlacemarks.first?.yep_autoName ?? NSLocalizedString("My Current Location", comment: "")))
-            }
-
-        case Section.UserPickedLocation.rawValue:
-            break
-
-        case Section.UserLocationPlacemarks.rawValue:
-            let placemark = userLocationPlacemarks[indexPath.row]
-            guard let _location = placemark.location else {
-                break
-            }
-            location = .Selected(info: Location.Info(coordinate: _location.coordinate, name: placemark.name))
-
-        case Section.SearchedLocation.rawValue:
-            let placemark = self.searchedMapItems[indexPath.row].placemark
-            guard let _location = placemark.location else {
-                break
-            }
-            location = .Selected(info: Location.Info(coordinate: _location.coordinate, name: placemark.name))
-            mapView.setCenterCoordinate(_location.coordinate, animated: true)
-
-        case Section.FoursquareVenue.rawValue:
-            let foursquareVenue = foursquareVenues[indexPath.row]
-            let coordinate = foursquareVenue.coordinate.yep_applyChinaLocationShift
-            location = .Selected(info: Location.Info(coordinate: coordinate, name: foursquareVenue.name))
-            mapView.setCenterCoordinate(coordinate, animated: true)
-
-        default:
-            break
-        }
-    }
-}
-

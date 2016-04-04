@@ -16,19 +16,12 @@ class PickLocationViewModel {
     let foursquareVenues = Variable<[FoursquareVenue]>([])
     
     let searchedMapItems = Variable<[MKMapItem]>([])
-    /// 中心点？
-    let centerCoordinate: Driver<CLLocationCoordinate2D>
     
     private let disposeBag = DisposeBag()
     
-    init(input: (didUpdateLocation: Driver<CLLocation>, searchPlacesName: Driver<String>)) {
-        
-        /// 将更新的位置的 coordinate ，ViewController 可能拿来用于设置中心点
-        centerCoordinate = input.didUpdateLocation
-            .map { $0.coordinate }
+    init(input: (didUpdateCoordinate: Driver<CLLocationCoordinate2D>, searchPlacesName: Driver<String>)) {
 
-        centerCoordinate
-            .map { $0.yep_cancelChinaLocationShift }
+        input.didUpdateCoordinate
             .flatMapLatest { rx_foursquareVenuesNearby(coordinate: $0) }.flatMapLatest { result -> Driver<[FoursquareVenue]> in
                 switch result {
                 case .Success(let venues):
@@ -41,8 +34,6 @@ class PickLocationViewModel {
             .asObservable()
             .bindTo(foursquareVenues)
             .addDisposableTo(disposeBag)
-        
-        
         
         input.searchPlacesName
             .map { name -> MKLocalSearchRequest in
@@ -68,10 +59,6 @@ class PickLocationViewModel {
             .asObservable()
             .bindTo(searchedMapItems)
             .addDisposableTo(disposeBag)
-        
-        
-        
-        
         
     }
     

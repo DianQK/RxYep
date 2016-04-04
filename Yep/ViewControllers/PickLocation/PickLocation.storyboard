@@ -19,7 +19,7 @@
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="tMv-sj-Ihx">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="461"/>
                             </mapView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_pin_shadow" translatesAutoresizingMaskIntoConstraints="NO" id="hGG-VP-3D8">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="icon_pin_shadow" translatesAutoresizingMaskIntoConstraints="NO" id="hGG-VP-3D8">
                                 <rect key="frame" x="178" y="219" width="18" height="24"/>
                             </imageView>
                             <searchBar contentMode="redraw" placeholder="Search" translatesAutoresizingMaskIntoConstraints="NO" id="V0o-OK-Glb">
@@ -33,10 +33,6 @@
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="Vvv-Sf-xsu">
                                 <rect key="frame" x="0.0" y="461" width="375" height="206"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <connections>
-                                    <outlet property="dataSource" destination="07Q-L4-6oe" id="y4u-G4-nt9"/>
-                                    <outlet property="delegate" destination="07Q-L4-6oe" id="nsn-Su-HxZ"/>
-                                </connections>
                             </tableView>
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="pIo-vY-4QU">
                                 <rect key="frame" x="177" y="184" width="20" height="20"/>
