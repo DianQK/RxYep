@@ -186,7 +186,7 @@ class ContactsViewController: UIViewController, NavigationBarAutoShowable {
         /// 点击跳转到添加朋友
         addFriendBarButton.rx_tap
             .subscribeNext { [unowned self] in
-                self.performSegueWithIdentifier("showAddFriends", sender: nil)
+                self.yep_performSegueWithIdentifier("showAddFriends", sender: nil)
             }
             .addDisposableTo(rx_disposeBag)
     }
@@ -259,7 +259,7 @@ extension ContactsViewController: UISearchBarDelegate {
 
     func searchBarShouldBeginEditing(searchBar: UISearchBar) -> Bool {
 
-        performSegueWithIdentifier("showSearchContacts", sender: nil)
+        yep_performSegueWithIdentifier("showSearchContacts", sender: nil)
 
         return false
     }
